@@ -517,6 +517,17 @@
         .success-message.show {
             display: block;
         }
+
+        .source-running {
+            background: #ffa500;
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
     </style>
 </head>
 <body>
@@ -1092,9 +1103,17 @@
 
             breakdown.forEach(item => {
                 const isManual = item.source === 'manual_input';
-                const sourceBadge = isManual ? 
-                    '<span class="source-badge source-manual">MANUAL</span>' : 
-                    '<span class="source-badge source-auto">AUTO</span>';
+                const isRunning = item.status === 'running';
+                
+                // Source badge
+                let sourceBadge;
+                if (isManual) {
+                    sourceBadge = '<span class="source-badge source-manual">MANUAL</span>';
+                } else if (isRunning) {
+                    sourceBadge = '<span class="source-badge source-running">RUNNING ⏱️</span>';
+                } else {
+                    sourceBadge = '<span class="source-badge source-auto">AUTO</span>';
+                }
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1105,6 +1124,12 @@
                     <td>${item.co2.toFixed(4)}</td>
                     <td>${sourceBadge}</td>
                 `;
+                
+                // Highlight running apps
+                if (isRunning) {
+                    row.style.backgroundColor = '#fffacd';
+                }
+                
                 tbody.appendChild(row);
             });
         }
