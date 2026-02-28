@@ -23,13 +23,14 @@ config = {
     'emission_factor': 0.475,
     'tracking_enabled': True,
     'idle_threshold': 300,
-    'realtime_update_interval': 30,
-    'track_all_running': True  # NEW: Track all running apps, not just active ones
+    'realtime_update_interval': 5,
+    'track_all_running': True
 }
 
 # Process tracking
 tracked_processes = {}
-process_start_times = {}  # Track when each process started
+process_start_times = {}
+paused_times = {}  # ✅ NEW: Store time accumulated before pause
 last_activity_time = time.time()
 is_idle = False
 
@@ -137,22 +138,32 @@ def calculate_energy(category, duration, cpu_usage=0):
     return hours * base_rate * cpu_multiplier
 
 def update_realtime_data():
-    """Update activity_data with ALL currently running apps"""
+    """Update running apps with current time (including paused time)"""
     current_time = time.time()
     
     for pid, start_time in process_start_times.items():
         if pid in tracked_processes:
             proc_name = tracked_processes[pid]['name']
-            running_time = current_time - start_time
             
-            # Get average CPU
+            # ✅ Current session time since last resume
+            current_session_time = current_time - start_time
+            
+            # ✅ Add any paused time from before idle
+            paused_time = paused_times.get(pid, 0)
+            
+            # ✅ Total = paused time + current running time
+            total_running_time = paused_time + current_session_time
+            
             cpu = tracked_processes[pid].get('cpu', 0)
-            
             category = categorize_application(proc_name)
             
-            # Update with current running time
+            # Get previous completed sessions
+            prev_completed_time = 0
+            if proc_name in activity_data and activity_data[proc_name]['status'] == 'completed':
+                prev_completed_time = activity_data[proc_name]['total_time']
+            
             activity_data[proc_name] = {
-                'total_time': running_time,
+                'total_time': prev_completed_time + total_running_time,
                 'cpu_usage': cpu,
                 'category': category,
                 'last_update': datetime.now().isoformat(),
@@ -161,28 +172,85 @@ def update_realtime_data():
             }
 
 def track_system_activity():
-    """✅ FIXED: Track ALL running applications continuously"""
-    global last_activity_time, is_idle, process_start_times, tracked_processes
+    """✅ FIXED: Resume tracking after idle (not restart)"""
+    global last_activity_time, is_idle, process_start_times, tracked_processes, paused_times
     
     print("🔍 Application tracking started")
     print("="*60)
-    print("✅ CONTINUOUS TRACKING MODE")
-    print("   → All running apps tracked (minimized or not)")
-    print("   → No CPU threshold required")
-    print("   → Accurate time for all applications")
+    print("✅ RESUME TRACKING MODE")
+    print("   → Cumulative time: Sessions add up correctly")
+    print("   → Idle pause: Pauses tracking, resumes where left off")
+    print("   → Sleep detection: Handles computer sleep")
     print(f"⏱️  Real-time updates: Every {config['realtime_update_interval']}s")
+    print(f"😴 Idle threshold: {config['idle_threshold']}s ({config['idle_threshold']/60:.0f} min)")
     print("="*60 + "\n")
     
     last_realtime_update = time.time()
+    last_check_time = time.time()
     
     while config['tracking_enabled']:
         try:
             current_time = time.time()
             
+            # ✅ Detect system sleep/wake
+            time_since_last_check = current_time - last_check_time
+            if time_since_last_check > 60:
+                print(f"\n💤 System may have been ASLEEP")
+                print(f"   Time gap: {time_since_last_check/60:.1f} minutes")
+                print("   → Saving current state and resetting times...\n")
+                
+                # Save accumulated time before resetting
+                for pid in list(process_start_times.keys()):
+                    if pid in tracked_processes:
+                        elapsed = last_check_time - process_start_times[pid]
+                        paused_times[pid] = paused_times.get(pid, 0) + elapsed
+                        process_start_times[pid] = current_time
+                
+                last_activity_time = current_time
+            
+            last_check_time = current_time
+            
             # Check for idle state
             idle_time = current_time - last_activity_time
+            was_idle = is_idle
             is_idle = idle_time > config['idle_threshold']
             
+            # ✅ ENTERING IDLE STATE
+            if is_idle and not was_idle:
+                print(f"\n😴 System went IDLE (no activity for {config['idle_threshold']/60:.0f} min)")
+                print("   → Pausing time tracking (will resume when active)...")
+                
+                # ✅ Save time accumulated so far for each running process
+                for pid in list(process_start_times.keys()):
+                    if pid in tracked_processes:
+                        proc_name = tracked_processes[pid]['name']
+                        start_time = process_start_times[pid]
+                        elapsed_time = current_time - start_time
+                        
+                        # ✅ Store accumulated time (don't save to activity_data yet)
+                        paused_times[pid] = paused_times.get(pid, 0) + elapsed_time
+                        
+                        print(f"   ⏸️  Paused: {proc_name} - Session: {elapsed_time/60:.1f} min (Accumulated: {paused_times[pid]/60:.1f} min)")
+            
+            # ✅ EXITING IDLE STATE (RESUME)
+            if not is_idle and was_idle:
+                print(f"\n✨ System ACTIVE again")
+                print("   → Resuming time tracking from where it was paused...\n")
+                
+                # ✅ Resume tracking with NEW start times (but keep accumulated time)
+                for pid in list(process_start_times.keys()):
+                    if pid in tracked_processes:
+                        proc_name = tracked_processes[pid]['name']
+                        accumulated = paused_times.get(pid, 0)
+                        
+                        # ✅ Set new start time (from NOW)
+                        process_start_times[pid] = current_time
+                        
+                        print(f"   ▶️  Resumed: {proc_name} - Previously accumulated: {accumulated/60:.1f} min")
+                
+                last_activity_time = current_time
+            
+            # ✅ Skip tracking if idle
             if is_idle:
                 time.sleep(5)
                 continue
@@ -205,40 +273,48 @@ def track_system_activity():
                         'cpu': cpu
                     }
                     
-                    # ✅ Track start time for NEW processes
+                    # Track start time for NEW processes
                     if pid not in process_start_times:
                         process_start_times[pid] = current_time
+                        paused_times[pid] = 0  # ✅ Initialize paused time
                         print(f"✅ Started tracking: {proc_name} (PID: {pid})")
                     
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
             
-            # ✅ Real-time update every 30 seconds (update ALL running apps)
+            # Real-time update
             if current_time - last_realtime_update >= config['realtime_update_interval']:
                 update_realtime_data()
                 running_count = len([p for p in activity_data.values() if p['status'] == 'running'])
-                print(f"📊 Real-time update: {running_count} apps currently running")
+                if running_count > 0:
+                    print(f"📊 Real-time update: {running_count} apps running")
                 last_realtime_update = current_time
             
-            # ✅ Save data for processes that ENDED
+            # Save data for processes that ENDED
             ended_pids = set(process_start_times.keys()) - set(current_processes.keys())
             for pid in ended_pids:
                 if pid in tracked_processes:
                     proc_name = tracked_processes[pid]['name']
                     start_time = process_start_times[pid]
-                    total_time = current_time - start_time
-                    cpu = tracked_processes[pid].get('cpu', 0)
+                    current_session_time = current_time - start_time
                     
+                    # ✅ Add paused time
+                    paused_time = paused_times.get(pid, 0)
+                    total_session_time = paused_time + current_session_time
+                    
+                    cpu = tracked_processes[pid].get('cpu', 0)
                     category = categorize_application(proc_name)
                     
-                    # Add to existing time if app was opened before
+                    # Get previous completed time
                     prev_time = 0
                     if proc_name in activity_data and activity_data[proc_name]['status'] == 'completed':
                         prev_time = activity_data[proc_name]['total_time']
                     
-                    # Save final values
+                    # ✅ Save with cumulative time
+                    total_time = prev_time + total_session_time
+                    
                     activity_data[proc_name] = {
-                        'total_time': prev_time + total_time,
+                        'total_time': total_time,
                         'cpu_usage': cpu,
                         'category': category,
                         'last_update': datetime.now().isoformat(),
@@ -247,12 +323,14 @@ def track_system_activity():
                     }
                     
                     print(f"✅ Completed: {proc_name}")
-                    print(f"   Session time: {total_time/60:.1f} min")
-                    print(f"   Total time: {(prev_time + total_time)/60:.1f} min")
+                    print(f"   This session: {total_session_time/60:.1f} min")
+                    print(f"   Total time: {total_time/60:.1f} min")
                     print(f"   Category: {category}\n")
                 
-                # Remove from tracking
+                # Clean up
                 del process_start_times[pid]
+                if pid in paused_times:
+                    del paused_times[pid]
             
             # Update tracked processes
             tracked_processes.clear()
@@ -377,6 +455,7 @@ def manage_config():
 def reset_data():
     activity_data.clear()
     process_start_times.clear()
+    paused_times.clear()  # ✅ Clear paused times too
     return jsonify({'status': 'success'})
 
 @app.route('/api/reset-manual', methods=['POST'])
@@ -402,18 +481,17 @@ if __name__ == '__main__':
     tracking_thread.start()
     
     print("\n" + "="*60)
-    print("🌍 Carbon Footprint Tracker - ACCURATE EDITION")
+    print("🌍 Carbon Footprint Tracker - RESUME EDITION")
     print("="*60)
     print("📊 Dashboard: http://localhost:5000/dashboard")
     print("")
-    print("✅ TRACKING MODE: ALL RUNNING APPS")
-    print("   • Spotify playing in background: ✅ Tracked")
-    print("   • Paint minimized: ✅ Tracked")
-    print("   • Chrome tabs: ✅ Tracked (via extension)")
-    print("   • Any running app: ✅ Tracked accurately")
+    print("✅ FEATURES:")
+    print("   • Cumulative sessions: 1h25m + 15m = 1h40m ✅")
+    print("   • Idle pause/resume: Continues from where it stopped ✅")
+    print("   • Sleep detection: Handles computer sleep ✅")
     print("")
-    print("⏱️  Updates every 30 seconds")
-    print("🎯 100% accurate time tracking")
+    print("⏱️  Updates every 5 seconds")
+    print("😴 Pauses after 5 min idle (resumes when active)")
     print("="*60 + "\n")
     
     app.run(debug=True, port=5000)
