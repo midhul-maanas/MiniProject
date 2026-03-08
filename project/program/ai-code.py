@@ -160,13 +160,21 @@ def calculate_energy(category, duration, cpu_usage=0):
 def _live_time(data):
     """Return the real-time runtime in seconds for a tracked application.
 
-    If the process is currently running, includes the elapsed time of the
-    current session on top of all previous completed sessions.  If it is
-    stopped, returns only the completed accumulated time.
+    Computes: total_time + (now - start_time) - idle_total - current_idle.
+    Idle periods are subtracted so the session is never broken; the
+    dashboard always gets a valid, continuously-increasing number for
+    active apps and a frozen-but-valid number for idle apps.
     """
+    now = time.time()
     total = data.get('total_time', 0)
-    if data.get('status') == 'running' and data.get('start_time') is not None:
-        total += time.time() - data['start_time']
+
+    if data.get('start_time') is not None:
+        runtime = now - data['start_time']
+        runtime -= data.get('idle_total', 0)
+        if data.get('idle_start') is not None:
+            runtime -= now - data['idle_start']
+        total += max(runtime, 0)
+
     return total
 
 
@@ -195,6 +203,14 @@ def track_system_activity():
     while config['tracking_enabled']:
         try:
             current_time = time.time()
+
+            # ------ Detect foreground (active) application ------
+            try:
+                hwnd = win32gui.GetForegroundWindow()
+                _, active_pid = win32process.GetWindowThreadProcessId(hwnd)
+                active_app = psutil.Process(active_pid).name()
+            except Exception:
+                active_app = None
 
             # ------ Snapshot currently visible processes ------
             current_processes = {}
@@ -226,6 +242,10 @@ def track_system_activity():
                             'category': category,
                             'source': 'application',
                             'status': 'running',
+                            'last_active': current_time,
+                            'app_idle': False,
+                            'idle_start': None,
+                            'idle_total': 0,
                         }
                     else:
                         entry = activity_data[proc_name]
@@ -233,8 +253,40 @@ def track_system_activity():
                             # ---- Process restarted: begin a new session ----
                             entry['start_time'] = current_time
                             entry['status'] = 'running'
+                            entry['last_active'] = current_time
+                            entry['app_idle'] = False
+                            entry['idle_start'] = None
+                            entry['idle_total'] = 0
                         # Update rolling average CPU (keep it cheap)
                         entry['cpu_usage'] = (entry['cpu_usage'] + cpu) / 2
+
+                    # ---- Update idle state for this process ----
+                    entry = activity_data[proc_name]
+
+                    # Foreground app is always active
+                    if active_app and proc_name == active_app:
+                        entry['last_active'] = current_time
+
+                    idle_time = current_time - entry.get('last_active', current_time)
+
+                    # Streaming/video apps should never become idle
+                    if entry.get('category') in ('streaming', 'video'):
+                        entry['app_idle'] = False
+                    else:
+                        entry['app_idle'] = idle_time > config['idle_threshold']
+
+                    # Set status indicator (does NOT affect session tracking)
+                    if entry['app_idle']:
+                        entry['status'] = 'idle'
+                        # Record when idle period started (once)
+                        if entry.get('idle_start') is None:
+                            entry['idle_start'] = current_time
+                    else:
+                        # Resume from idle: accumulate idle duration, clear marker
+                        if entry.get('idle_start') is not None:
+                            entry['idle_total'] = entry.get('idle_total', 0) + (current_time - entry['idle_start'])
+                            entry['idle_start'] = None
+                        entry['status'] = 'running'
 
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
@@ -245,11 +297,17 @@ def track_system_activity():
                 proc_name = tracked_processes[pid]['name']
                 if proc_name in activity_data:
                     entry = activity_data[proc_name]
-                    if entry['status'] == 'running' and entry.get('start_time') is not None:
-                        # Finalize the session: add elapsed time to total_time
+                    if entry.get('status') in ('running', 'idle') and entry.get('start_time') is not None:
+                        # Finalize the session: subtract idle time from duration
                         session_duration = current_time - entry['start_time']
-                        entry['total_time'] += session_duration
+                        session_duration -= entry.get('idle_total', 0)
+                        if entry.get('idle_start') is not None:
+                            session_duration -= current_time - entry['idle_start']
+                        entry['total_time'] += max(session_duration, 0)
                         entry['start_time'] = None
+                        entry['idle_start'] = None
+                        entry['idle_total'] = 0
+                        entry['app_idle'] = False
                         entry['status'] = 'completed'
                         print(f"✅ Completed: {proc_name}")
                         print(f"   Total time: {entry['total_time']/60:.1f} min")
@@ -358,6 +416,7 @@ def calculate_footprint():
             'co2': co2,
             'source': data.get('source', 'application'),
             'status': data.get('status', 'completed'),
+            'app_idle': data.get('app_idle', False),
             'details': data.get('details', {}),
         })
 
