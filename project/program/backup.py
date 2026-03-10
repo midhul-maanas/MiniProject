@@ -7,6 +7,9 @@ from datetime import datetime
 from collections import defaultdict
 import win32gui
 import win32process
+import csv
+from datetime import datetime
+import os
 
 
 app = Flask(__name__)
@@ -26,10 +29,12 @@ CORS(app)
 # ---------------------------------------------------------------------------
 activity_data = {}
 
+
+IDLE_THRESHOLD = 600 #seconds
 config = {
     'emission_factor': 0.475,
     'tracking_enabled': True,
-    'idle_threshold': 300,
+    'idle_threshold': IDLE_THRESHOLD,
     'realtime_update_interval': 5,
     'track_all_running': True
 }
@@ -79,6 +84,34 @@ SYSTEM_PROCESS_PATTERNS = [
     'svc', 'host', 'service', 'driver', 'helper', 'agent',
     'daemon', 'background', 'runtime', 'broker', 'protocol'
 ]
+
+def log_usage_data(app_name, category, duration, cpu, idle, co2):
+
+    file_exists = os.path.isfile("usage_data.csv")
+
+    with open("usage_data.csv", "a", newline="") as f:
+        writer = csv.writer(f)
+
+        if not file_exists:
+            writer.writerow([
+                "timestamp",
+                "app_name",
+                "category",
+                "duration",
+                "cpu_usage",
+                "idle_time",
+                "co2"
+            ])
+
+        writer.writerow([
+            datetime.now(),
+            app_name,
+            category,
+            duration,
+            cpu,
+            idle,
+            co2
+        ])
 
 
 def window_checked(name):
@@ -132,7 +165,8 @@ def categorize_application(app_name):
         'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
         'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal', 'deezer'],
         'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch',
-                    'canva', 'gimp', 'paintapp', 'pbrush']
+                    'canva', 'gimp', 'paintapp', 'pbrush'],
+        'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity','grok'],
     }
     app_name_lower = app_name.lower()
     for category, keywords in categories.items():
@@ -142,15 +176,28 @@ def categorize_application(app_name):
 
 
 def calculate_energy(category, duration, cpu_usage=0):
+    # energy_rates = {
+    #     'video': 0.15, 'meeting': 0.12, 'browsing': 0.03,
+    #     'social': 0.05, 'email': 0.02, 'work': 0.06,
+    #     'streaming': 0.08, 'cloud': 0.08, 'design': 0.05,
+    #     'other': 0.04
+    # }
     energy_rates = {
-        'video': 0.15, 'meeting': 0.12, 'browsing': 0.03,
-        'social': 0.05, 'email': 0.02, 'work': 0.06,
-        'streaming': 0.08, 'cloud': 0.08, 'design': 0.05,
-        'other': 0.04
+    'video': 0.035,
+    'meeting': 0.045,
+    'browsing': 0.015,
+    'social': 0.020,
+    'email': 0.012,
+    'work': 0.025,
+    'streaming': 0.035,
+    'design': 0.030,
+    'other': 0.020,
+    'ai': 0.06,
     }
     base_rate = energy_rates.get(category, energy_rates['other'])
     hours = duration / 3600
-    cpu_multiplier = 1 + (cpu_usage / 100) * 0.5
+    # cpu_multiplier = 1 + (cpu_usage / 100) * 0.5
+    cpu_multiplier = 1 + (cpu_usage / 100) * 0.3
     return hours * base_rate * cpu_multiplier
 
 
@@ -270,7 +317,7 @@ def track_system_activity():
                     idle_time = current_time - entry.get('last_active', current_time)
 
                     # Streaming/video apps should never become idle
-                    if entry.get('category') in ('streaming', 'video'):
+                    if entry.get('category') in ('streaming', 'video','meeting'):
                         entry['app_idle'] = False
                     else:
                         entry['app_idle'] = idle_time > config['idle_threshold']
@@ -337,6 +384,7 @@ def add_activity():
     identifier = data.get('domain') or data.get('application')
     duration = data.get('duration', 0)
     category = data.get('category', 'unknown')
+    status = data.get('status', 'completed')
 
     if identifier not in activity_data:
         activity_data[identifier] = {
@@ -345,10 +393,12 @@ def add_activity():
             'cpu_usage': 0,
             'category': category,
             'source': source,
-            'status': 'completed',
+            'status': status,
         }
 
     activity_data[identifier]['total_time'] += duration
+    activity_data[identifier]['status'] = status
+    activity_data[identifier]['category'] = category
 
     global last_activity_time
     last_activity_time = time.time()
@@ -405,6 +455,15 @@ def calculate_footprint():
             )
             co2 = energy * config['emission_factor']
 
+        log_usage_data(
+            identifier,
+            data['category'],
+            live_time,
+            data.get('cpu_usage',0),
+            data.get('idle_total',0),
+            co2
+        )
+        
         total_energy += energy
         total_co2 += co2
 
