@@ -10,10 +10,12 @@ import win32process
 import csv
 from datetime import datetime
 import os
-
+import joblib
 
 app = Flask(__name__)
 CORS(app)
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -84,6 +86,37 @@ SYSTEM_PROCESS_PATTERNS = [
     'svc', 'host', 'service', 'driver', 'helper', 'agent',
     'daemon', 'background', 'runtime', 'broker', 'protocol'
 ]
+
+model = joblib.load("co2_model.pkl")
+
+def predict_co2(duration,cpu_usage,idle_time,category):
+    hour = datetime.now().hour
+    category_map = {
+        'video':0,
+        'meeting':1,
+        'email':2,
+        'work':3,
+        'social':4,
+        'browsing':5,
+        'streaming':6,
+        'design':7,
+        'ai':8,
+        'other':9
+    }
+
+    category_encoded = category_map.get(category,9)
+
+    prediction = model.predict([[
+        duration,
+        cpu_usage,
+        idle_time,
+        hour,
+        category_encoded
+    ]])
+
+    return float(prediction[0])
+
+
 
 def log_usage_data(app_name, category, duration, cpu, idle, co2):
 
@@ -375,6 +408,56 @@ def track_system_activity():
 # ---------------------------------------------------------------------------
 # Flask routes
 # ---------------------------------------------------------------------------
+
+@app.route("/api/predict-next-hour")
+def predict_next_hour():
+    predicted_total = 0
+    for identifer,data in activity_data.items():
+        live = _live_time(data)
+        
+        predicted = predict_co2(
+            live,
+            data.get("cpu_usage",0),
+            data.get("idle_total",0),
+            data.get("category","other")
+        )
+
+        predicted_total += predicted
+
+        return jsonify({
+            "predicted_next_hour_co2": predicted_total
+        })
+
+@app.route("/api/predict-today")
+def predict_today():
+    current_co2 = 0
+    predicted_remaining = 0
+    current_hour = datetime.now().hour
+
+    for identifier,data in activity_data.items():
+        live = _live_time(data)
+        energy = calculate_energy(
+            data["category"],
+            live,
+            data.get("cpu_usage",0)
+        )
+
+        co2 = energy * config["emission_factor"]
+        current_co2 += co2
+
+        for h in range(current_hour+1,24):
+            predicted = predict_co2(
+                live,
+                data.get("cpu_usage",0),
+                data.get("idle_total",0),
+                data.get("category","other")
+            )
+            predicted_remaining += predicted
+    
+    return jsonify({
+        "current_co2": current_co2,
+        "predicted_today_total_co2": current_co2 +predicted_remaining
+    })
 
 @app.route('/api/activity', methods=['POST'])
 def add_activity():
