@@ -11,6 +11,7 @@ import csv
 from datetime import datetime
 import os
 import joblib
+from api import generate_ai_suggestions
 
 app = Flask(__name__)
 CORS(app)
@@ -459,6 +460,46 @@ def predict_today():
     return jsonify({
         "current_co2": current_co2,
         "predicted_today_total_co2": current_co2 +predicted_remaining
+    })
+
+@app.route("/api/ai-suggestions")
+def ai_suggestions():
+
+    total_energy = 0
+    total_co2 = 0
+    breakdown = []
+
+    for identifier, data in activity_data.items():
+
+        live_time = _live_time(data)
+
+        energy = calculate_energy(
+            data["category"],
+            live_time,
+            data.get("cpu_usage",0)
+        )
+
+        co2 = energy * config["emission_factor"]
+
+        total_energy += energy
+        total_co2 += co2
+
+        breakdown.append({
+            "app": identifier,
+            "category": data["category"],
+            "time": live_time,
+            "co2": co2,
+            "idle": data.get("app_idle", False)
+        })
+
+    suggestions = generate_ai_suggestions(
+        total_co2,
+        total_energy,
+        breakdown
+    )
+
+    return jsonify({
+        "suggestions": suggestions
     })
 
 @app.route('/api/activity', methods=['POST'])
