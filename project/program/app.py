@@ -193,19 +193,35 @@ def is_system_process(process_name):
 
 
 def categorize_application(app_name):
+    # categories = {
+    #     'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv'],
+    #     'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
+    #     'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark'],
+    #     'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm',
+    #              'intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim',
+    #              'onenote', 'evernote', 'notion','powerpnt'],
+    #     'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger'],
+    #     'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
+    #     'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal', 'deezer'],
+    #     'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch',
+    #                 'canva', 'gimp', 'paintapp', 'pbrush'],
+    #     'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity','grok'],
+    # }
     categories = {
-        'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv'],
-        'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
-        'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark'],
-        'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm',
-                 'intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim',
-                 'onenote', 'evernote', 'notion','powerpnt'],
-        'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger'],
-        'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
-        'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal', 'deezer'],
-        'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch',
-                    'canva', 'gimp', 'paintapp', 'pbrush'],
-        'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity','grok'],
+    'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv','hotstar', 'primevideo', 'sonyliv', 'zee5'],
+    'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
+    'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark', 'gmail'],
+    'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm','intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim','onenote', 'evernote', 'notion', 'powerpnt'],
+    'productivity': ['notion', 'todoist', 'trello', 'asana', 'clickup','calendar', 'ticktick', 'obsidian'],
+    'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger','facebook', 'instagram', 'twitter', 'reddit', 'snapchat'],
+    'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
+    'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal','deezer', 'gaana', 'jiosaavn', 'wynk'],
+    'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch','canva', 'gimp', 'paintapp', 'pbrush', 'blender'],
+    'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity', 'grok'],
+    'shopping': ['amazon', 'flipkart', 'myntra', 'ajio', 'meesho','snapdeal', 'tatacliq', 'nykaa'],
+    'sports': ['espn', 'cricbuzz', 'icc', 'fifa', 'nba', 'sportstar','fotmob'],
+    'news': ['bbc', 'cnn', 'ndtv', 'timesofindia', 'indianexpress','thehindu', 'hindustantimes'],
+    'education': ['coursera', 'udemy', 'edx', 'khanacademy','byjus', 'unacademy', 'udacity']
     }
     app_name_lower = app_name.lower()
     for category, keywords in categories.items():
@@ -222,16 +238,20 @@ def calculate_energy(category, duration, cpu_usage=0):
     #     'other': 0.04
     # }
     energy_rates = {
-    'video': 0.035,
-    'meeting': 0.045,
-    'browsing': 0.015,
-    'social': 0.020,
-    'email': 0.012,
-    'work': 0.025,
-    'streaming': 0.035,
-    'design': 0.030,
-    'other': 0.020,
-    'ai': 0.06,
+        'video': 0.035,
+        'meeting': 0.045,
+        'browsing': 0.015,
+        'social': 0.020,
+        'email': 0.012,
+        'work': 0.025,
+        'streaming': 0.035,
+        'design': 0.030,
+        'ai': 0.06,
+        'other': 0.020,
+        'shopping': 0.020,
+        'sports': 0.020,
+        'news': 0.020,
+        'education': 0.020
     }
     base_rate = energy_rates.get(category, energy_rates['other'])
     hours = duration / 3600

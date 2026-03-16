@@ -404,15 +404,30 @@ function extractDomain(url) {
 }
 
 function categorizeWebsite(domain) {
+  // const categories = {
+  //   video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com'],
+  //   social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com'],
+  //   email: ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com'],
+  //   meeting: ['zoom.us', 'meet.google.com', 'teams.microsoft.com', 'webex.com'],
+  //   cloud: ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com'],
+  //   work: ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com'],
+  //   streaming: ['music.youtube.com', 'soundcloud.com', 'spotify.com', 'deezer.com'],
+  //   ai: ['chatgpt.com', 'openai.com', 'gemini.google.com', 'claude.ai', 'perplexity.ai', 'grok.com']
+  // };
   const categories = {
-    video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com'],
-    social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com'],
-    email: ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com'],
+    video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com', 'hotstar.com', 'sonyliv.com', 'zee5.com'],
+    social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com', 'snapchat.com', 'discord.com', 'web.whatsapp.com'],
+    email: ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com', 'icloud.com'],
     meeting: ['zoom.us', 'meet.google.com', 'teams.microsoft.com', 'webex.com'],
-    cloud: ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com'],
-    work: ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com'],
-    streaming: ['music.youtube.com', 'soundcloud.com', 'spotify.com', 'deezer.com'],
-    ai: ['chatgpt.com', 'openai.com', 'gemini.google.com', 'claude.ai', 'perplexity.ai', 'grok.com']
+    cloud: ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com', 'mega.nz'],
+    work: ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com', 'asana.com', 'clickup.com', 'miro.com'],
+    productivity: ['calendar.google.com', 'todoist.com', 'ticktick.com', 'obsidian.md'],
+    streaming: ['music.youtube.com', 'soundcloud.com', 'spotify.com', 'deezer.com', 'gaana.com', 'jiosaavn.com', 'wynk.in'],
+    ai: ['chatgpt.com', 'openai.com', 'gemini.google.com', 'bard.google.com', 'claude.ai', 'perplexity.ai', 'copilot.microsoft.com', 'grok.com', 'character.ai'],
+    shopping: ['amazon.com', 'amazon.in', 'flipkart.com', 'myntra.com', 'ajio.com', 'meesho.com', 'snapdeal.com', 'tatacliq.com', 'nykaa.com'],
+    sports: ['espn.com', 'espncricinfo.com', 'cricbuzz.com', 'icc-cricket.com', 'fotmob.com'],
+    news: ['bbc.com', 'cnn.com', 'ndtv.com', 'timesofindia.com', 'indianexpress.com', 'thehindu.com', 'hindustantimes.com'],
+    education: ['coursera.org', 'udemy.com', 'edx.org', 'khanacademy.org', 'byjus.com', 'unacademy.com']
   };
 
   for (const [category, domains] of Object.entries(categories)) {
