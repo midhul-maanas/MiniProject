@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Footprint Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -529,116 +528,13 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
 }
-    
-/* ===== PREMIUM DARK UPGRADE ===== */
-
-body{
-font-family:'Poppins',sans-serif !important;
-background:radial-gradient(circle at 10% 20%, #1e293b, #020617 70%) !important;
-color:#e5e7eb !important;
-}
-
-.container{
-background:rgba(15,23,42,.75) !important;
-backdrop-filter:blur(18px);
-box-shadow:0 25px 80px rgba(0,0,0,.8);
-}
-
-header{
-background:transparent !important;
-border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-header p{display:none}
-
-.summary-card{
-background:linear-gradient(145deg,#020617,#0f172a) !important;
-color:#e5e7eb;
-}
-
-.summary-card .value{
-background:linear-gradient(90deg,#60a5fa,#c084fc);
--webkit-background-clip:text;
-color:transparent !important;
-}
-
-.manual-input-section{
-background:#020617 !important;
-border-top:1px solid rgba(255,255,255,.08);
-}
-
-.tab-btn{
-background:#020617 !important;
-color:#94a3b8 !important;
-border:1px solid rgba(255,255,255,.08);
-}
-
-.tab-btn.active{
-background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
-color:white !important;
-}
-
-.tab-content{
-background:#020617 !important;
-box-shadow:0 10px 30px rgba(0,0,0,.7);
-}
-
-.input-group input,
-.input-group select{
-background:#0f172a !important;
-color:white !important;
-border:1px solid rgba(255,255,255,.1) !important;
-}
-
-.checkbox-group{background:#020617 !important}
-
-.chart-container{
-background:#020617 !important;
-box-shadow:0 10px 30px rgba(0,0,0,.7);
-}
-
-.chart-container h2{color:white}
-
-.data-table th{
-background:#020617 !important;
-color:#94a3b8 !important;
-}
-
-.data-table td{
-color:#e5e7eb !important;
-border-bottom:1px solid rgba(255,255,255,.05);
-}
-
-.data-table tr:hover{
-background:#020617 !important;
-}
-
-.category-ai{
-background:#312e81 !important;
-color:#c7d2fe !important;
-}
-
-.source-idle{
-background:#1e293b !important;
-color:#93c5fd !important;
-}
-
-.source-completed{
-background:#022c22 !important;
-color:#34d399 !important;
-}
-
-button{
-background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
-}
-
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Digital Carbon Footprint Dashboard</h1>
-            
+            <h1>🌍 Digital Carbon Footprint Dashboard</h1>
+            <p>Track and manage your environmental impact from digital activities</p>
         </header>
 
         <div id="loading">
@@ -650,9 +546,9 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             <!-- Summary Cards -->
             <div class="summary">
                 <div class="summary-card">
-                    <h2>Total CO Emissions</h2>
+                    <h2>Total CO₂ Emissions</h2>
                     <div class="value" id="totalCO2">0.00</div>
-                    <div class="unit">kg CO</div>
+                    <div class="unit">kg CO₂</div>
                 </div>
                 <div class="summary-card">
                     <h2>Energy Consumed</h2>
@@ -669,14 +565,14 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
             <!-- Manual Input Section -->
             <div class="manual-input-section">
-                <h2> Manual Activity Input</h2>
-                <p class="subtitle">Add activities that aren't automatically tracked for more accurate CO calculations</p>
+                <h2>📝 Manual Activity Input</h2>
+                <p class="subtitle">Add activities that aren't automatically tracked for more accurate CO₂ calculations</p>
                 
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('email')"> Email</button>
-                    <button class="tab-btn" onclick="switchTab('video')"> Video</button>
-                    <button class="tab-btn" onclick="switchTab('streaming')"> Streaming</button>
-                    <button class="tab-btn" onclick="switchTab('cloud')"> Cloud Storage</button>
+                    <button class="tab-btn active" onclick="switchTab('email')">📧 Email</button>
+                    <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
+                    <button class="tab-btn" onclick="switchTab('streaming')">📺 Streaming</button>
+                    <button class="tab-btn" onclick="switchTab('cloud')">☁️ Cloud Storage</button>
                 </div>
 
                 <!-- Email Tab -->
@@ -698,10 +594,10 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                         <label for="emailHasAttachments">Most emails had attachments (>1MB)</label>
                     </div>
                     
-                    <button class="btn-save" onclick="saveActivity('email')"> Save Email Data</button>
+                    <button class="btn-save" onclick="saveActivity('email')">💾 Save Email Data</button>
                     
                     <div class="activity-result" id="emailResult">
-                        <p> Email data saved! Estimated CO: <span class="co2-value" id="emailCO2">0.00</span> kg</p>
+                        <p>✅ Email data saved! Estimated CO₂: <span class="co2-value" id="emailCO2">0.00</span> kg</p>
                     </div>
                     
                     <div class="success-message" id="emailSuccess">
@@ -732,10 +628,10 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                         </div>
                     </div>
                     
-                    <button class="btn-save" onclick="saveActivity('video')"> Save Video Data</button>
+                    <button class="btn-save" onclick="saveActivity('video')">💾 Save Video Data</button>
                     
                     <div class="activity-result" id="videoResult">
-                        <p> Video data saved! Estimated CO: <span class="co2-value" id="videoCO2">0.00</span> kg</p>
+                        <p>✅ Video data saved! Estimated CO₂: <span class="co2-value" id="videoCO2">0.00</span> kg</p>
                     </div>
                     
                     <div class="success-message" id="videoSuccess">
@@ -771,10 +667,10 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                         </div>
                     </div>
                     
-                    <button class="btn-save" onclick="saveActivity('streaming')"> Save Streaming Data</button>
+                    <button class="btn-save" onclick="saveActivity('streaming')">💾 Save Streaming Data</button>
                     
                     <div class="activity-result" id="streamingResult">
-                        <p> Streaming data saved! Estimated CO: <span class="co2-value" id="streamingCO2">0.00</span> kg</p>
+                        <p>✅ Streaming data saved! Estimated CO₂: <span class="co2-value" id="streamingCO2">0.00</span> kg</p>
                     </div>
                     
                     <div class="success-message" id="streamingSuccess">
@@ -806,10 +702,10 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                         </div>
                     </div>
                     
-                    <button class="btn-save" onclick="saveActivity('cloud')"> Save Cloud Data</button>
+                    <button class="btn-save" onclick="saveActivity('cloud')">💾 Save Cloud Data</button>
                     
                     <div class="activity-result" id="cloudResult">
-                        <p> Cloud data saved! Estimated CO: <span class="co2-value" id="cloudCO2">0.00</span> kg</p>
+                        <p>✅ Cloud data saved! Estimated CO₂: <span class="co2-value" id="cloudCO2">0.00</span> kg</p>
                     </div>
                     
                     <div class="success-message" id="cloudSuccess">
@@ -819,30 +715,30 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
                 <!-- Manual Input Summary -->
                 <div class="manual-summary" id="manualSummary">
-                    <h3> Manual Input Summary</h3>
+                    <h3>📊 Manual Input Summary</h3>
                     <div class="manual-breakdown" id="manualBreakdown"></div>
                     <div class="manual-total">
-                        <strong>Total Manual Input CO:</strong>
+                        <strong>Total Manual Input CO₂:</strong>
                         <span id="manualTotalCO2">0.00 kg</span>
                     </div>
-                    <button class="btn-reset-manual" onclick="resetManualData()"> Reset Manual Data</button>
+                    <button class="btn-reset-manual" onclick="resetManualData()">🗑️ Reset Manual Data</button>
                 </div>
             </div>
 
             <!-- Charts Section -->
             <div class="charts">
                 <div class="chart-container">
-                    <h2> CO Emissions by Category</h2>
+                    <h2>📊 CO₂ Emissions by Category</h2>
                     <canvas id="categoryChart"></canvas>
                 </div>
 
                 <div class="chart-container">
-                    <h2> Top Activities</h2>
+                    <h2>📈 Top Activities</h2>
                     <canvas id="activityChart"></canvas>
                 </div>
 
                 <div class="chart-container">
-                    <h2> Activity Details</h2>
+                    <h2>📋 Activity Details</h2>
                     <table class="data-table" id="activityTable">
                         <thead>
                             <tr>
@@ -850,8 +746,8 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                                 <th>Category</th>
                                 <th>Time</th>
                                 <th>Energy (kWh)</th>
-                                <th>CO (kg)</th>
-                                <th>Status</th>
+                                <th>CO₂ (kg)</th>
+                                <th>Source</th>
                             </tr>
                         </thead>
                         <tbody id="activityTableBody"></tbody>
@@ -861,9 +757,9 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
             <!-- Actions -->
             <div class="actions">
-                <button onclick="refreshData()"> Refresh Data</button>
-                <button onclick="exportData()"> Export as JSON</button>
-                <button onclick="resetAllData()"> Reset All Data</button>
+                <button onclick="refreshData()">🔄 Refresh Data</button>
+                <button onclick="exportData()">📊 Export as JSON</button>
+                <button onclick="resetAllData()">🗑️ Reset All Data</button>
             </div>
         </div>
     </div>
@@ -871,7 +767,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
     <script>
         let categoryChart, activityChart;
         
-        // CO emission factors
+        // CO₂ emission factors
         const CO2_FACTORS = {
             email: {
                 text: 0.004,
@@ -1085,7 +981,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                document.getElementById('loading').innerHTML = '<p> Error loading data. Please ensure the backend is running at http://localhost:5000</p>';
+                document.getElementById('loading').innerHTML = '<p>❌ Error loading data. Please ensure the backend is running at http://localhost:5000</p>';
             }
         }
 
@@ -1102,11 +998,11 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
             manualActivities.forEach(item => {
                 const icon = {
-                    'email': '',
-                    'video': '',
-                    'streaming': '',
-                    'cloud': ''
-                }[item.category] || '';
+                    'email': '📧',
+                    'video': '🎥',
+                    'streaming': '📺',
+                    'cloud': '☁️'
+                }[item.category] || '📝';
 
                 html += `
                     <div class="manual-item">
@@ -1180,7 +1076,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                 data: {
                     labels: top10.map(item => item.name),
                     datasets: [{
-                        label: 'CO Emissions (kg)',
+                        label: 'CO₂ Emissions (kg)',
                         data: top10.map(item => item.co2),
                         backgroundColor: '#667eea'
                     }]
@@ -1211,12 +1107,12 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                 
                 // Source badge
                 let sourceBadge;
-                if (isRunning) {
-                    sourceBadge = '<span class="source-badge source-running">Running</span>';
-                } else if (item.time === 0) {
-                    sourceBadge = '<span class="source-badge source-idle">Idle</span>';
+                if (isManual) {
+                    sourceBadge = '<span class="source-badge source-manual">MANUAL</span>';
+                } else if (isRunning) {
+                    sourceBadge = '<span class="source-badge source-running">RUNNING ⏱️</span>';
                 } else {
-                    sourceBadge = '<span class="source-badge source-completed">Completed</span>';
+                    sourceBadge = '<span class="source-badge source-auto">AUTO</span>';
                 }
                 
                 const row = document.createElement('tr');
@@ -1287,99 +1183,5 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             }
         }, 30000);
     </script>
-
-<script>
-
-function showEmailModal(){
-
-let modal = document.createElement("div");
-
-modal.innerHTML = `
-<div style="
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.7);
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
-">
-
-<div style="
-background:#020617;
-padding:30px;
-border-radius:12px;
-width:400px;
-box-shadow:0 0 40px black;
-">
-
-<h2 style="margin-bottom:15px">Email Activity Detected</h2>
-
-<p>How many emails did you send/read?</p>
-
-<input id="popupEmailCount" type="number"
-style="width:100%;padding:10px;margin-top:10px;background:#0f172a;color:white;border:1px solid #334155">
-
-<button onclick="submitEmailPopup()"
-style="margin-top:15px;width:100%;padding:12px;background:#2563eb;color:white;border:none;border-radius:6px">
-Submit
-</button>
-
-</div>
-</div>
-`;
-
-document.body.appendChild(modal);
-window.emailModal = modal;
-}
-
-function submitEmailPopup(){
-
-let count = parseInt(document.getElementById("popupEmailCount").value) || 0;
-
-fetch("/api/manual-activity",{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:{
-sent:count,
-read:0,
-co2:count * 0.004
-}
-})
-});
-
-window.emailModal.remove();
-refreshData();
-}
-
-setInterval(async()=>{
-try{
-let r = await fetch("/api/email-popup");
-let d = await r.json();
-if(d.popup){
-showEmailModal();
-}
-}catch{}
-},5000);
-
-</script>
-
-
-<script>
-setInterval(async () => {
-    try{
-        let r = await fetch("/api/email-popup")
-        let d = await r.json()
-        if(d.show){
-            alert("Email activity detected. Please enter manual email usage.")
-        }
-    }catch(e){}
-},4000)
-</script>
-
 </body>
 </html>

@@ -1,7 +1,7 @@
 from google import genai
 import time
 
-API_KEY = "AIzaSyCtYNJiiyOcHo3s0fL17siJAsf1CjcSniU"
+API_KEY = "AIzaSyDRnLm-QLJKrklSKszIuW51UvWCSTSOVyE"
 
 client = genai.Client(api_key=API_KEY)
 
