@@ -90,7 +90,8 @@ SYSTEM_PROCESSES_BLACKLIST = {
 SYSTEM_PROCESS_PATTERNS = [
     'windows', 'microsoft', 'update', 'defender', 'system',
     'svc', 'host', 'service', 'driver', 'helper', 'agent',
-    'daemon', 'background', 'runtime', 'broker', 'protocol'
+    'daemon', 'background', 'runtime', 'broker', 'protocol',
+    'cmd','overlay','nvidia','overlay','radeon','acer','setup',
 ]
 
 model = joblib.load("co2_model.pkl")
@@ -211,7 +212,7 @@ def categorize_application(app_name):
     'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv','hotstar', 'primevideo', 'sonyliv', 'zee5'],
     'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
     'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark', 'gmail'],
-    'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm','intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim','onenote', 'evernote', 'notion', 'powerpnt'],
+    'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm','intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim','onenote', 'evernote', 'notion', 'powerpnt','antigravity'],
     'productivity': ['notion', 'todoist', 'trello', 'asana', 'clickup','calendar', 'ticktick', 'obsidian'],
     'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger','facebook', 'instagram', 'twitter', 'reddit', 'snapchat'],
     'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
