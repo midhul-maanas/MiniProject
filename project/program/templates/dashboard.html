@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Footprint Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -95,10 +96,25 @@
             font-size: 18px;
         }
 
-        .status-low { background: #d4edda; color: #155724; }
-        .status-moderate { background: #fff3cd; color: #856404; }
-        .status-high { background: #f8d7da; color: #721c24; }
-        .status-very-high { background: #f5c6cb; color: #491217; }
+        .status-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-moderate {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-very-high {
+            background: #f5c6cb;
+            color: #491217;
+        }
 
         /* Manual Input Section */
         .manual-input-section {
@@ -166,8 +182,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .input-grid {
@@ -266,8 +289,15 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .activity-result.show {
@@ -426,15 +456,50 @@
             text-transform: uppercase;
         }
 
-        .category-video { background: #ffe5e5; color: #c41e3a; }
-        .category-social { background: #e5f5ff; color: #0066cc; }
-        .category-email { background: #e5ffe5; color: #00cc44; }
-        .category-meeting { background: #fff5e5; color: #ff9900; }
-        .category-cloud { background: #f5e5ff; color: #9933cc; }
-        .category-work { background: #e5f5e5; color: #339966; }
-        .category-browsing { background: #f0f0f0; color: #666; }
-        .category-other { background: #f8f9fa; color: #999; }
-        .category-streaming { background: #ffe5f5; color: #cc0066; }
+        .category-video {
+            background: #ffe5e5;
+            color: #c41e3a;
+        }
+
+        .category-social {
+            background: #e5f5ff;
+            color: #0066cc;
+        }
+
+        .category-email {
+            background: #e5ffe5;
+            color: #00cc44;
+        }
+
+        .category-meeting {
+            background: #fff5e5;
+            color: #ff9900;
+        }
+
+        .category-cloud {
+            background: #f5e5ff;
+            color: #9933cc;
+        }
+
+        .category-work {
+            background: #e5f5e5;
+            color: #339966;
+        }
+
+        .category-browsing {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .category-other {
+            background: #f8f9fa;
+            color: #999;
+        }
+
+        .category-streaming {
+            background: #ffe5f5;
+            color: #cc0066;
+        }
 
         .source-badge {
             display: inline-block;
@@ -500,8 +565,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .success-message {
@@ -523,122 +593,136 @@
             background: #ffa500;
             color: #fff;
             animation: pulse 2s infinite;
+
         }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-    
-/* ===== PREMIUM DARK UPGRADE ===== */
+        @keyframes pulse {
 
-body{
-font-family:'Poppins',sans-serif !important;
-background:radial-gradient(circle at 10% 20%, #1e293b, #020617 70%) !important;
-color:#e5e7eb !important;
-}
+            0%,
+            100% {
+                opacity: 1;
+            }
 
-.container{
-background:rgba(15,23,42,.75) !important;
-backdrop-filter:blur(18px);
-box-shadow:0 25px 80px rgba(0,0,0,.8);
-}
+            50% {
+                opacity: 0.7;
+            }
+        }
 
-header{
-background:transparent !important;
-border-bottom:1px solid rgba(255,255,255,.08);
-}
+        /* ===== PREMIUM DARK UPGRADE ===== */
 
-header p{display:none}
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: radial-gradient(circle at 10% 20%, #1e293b, #020617 70%) !important;
+            color: #e5e7eb !important;
+        }
 
-.summary-card{
-background:linear-gradient(145deg,#020617,#0f172a) !important;
-color:#e5e7eb;
-}
+        .container {
+            background: rgba(15, 23, 42, .75) !important;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .8);
+        }
 
-.summary-card .value{
-background:linear-gradient(90deg,#60a5fa,#c084fc);
--webkit-background-clip:text;
-color:transparent !important;
-}
+        header {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
 
-.manual-input-section{
-background:#020617 !important;
-border-top:1px solid rgba(255,255,255,.08);
-}
+        header p {
+            display: none
+        }
 
-.tab-btn{
-background:#020617 !important;
-color:#94a3b8 !important;
-border:1px solid rgba(255,255,255,.08);
-}
+        .summary-card {
+            background: linear-gradient(145deg, #020617, #0f172a) !important;
+            color: #e5e7eb;
+        }
 
-.tab-btn.active{
-background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
-color:white !important;
-}
+        .summary-card .value {
+            background: linear-gradient(90deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            color: transparent !important;
+        }
 
-.tab-content{
-background:#020617 !important;
-box-shadow:0 10px 30px rgba(0,0,0,.7);
-}
+        .manual-input-section {
+            background: #020617 !important;
+            border-top: 1px solid rgba(255, 255, 255, .08);
+        }
 
-.input-group input,
-.input-group select{
-background:#0f172a !important;
-color:white !important;
-border:1px solid rgba(255,255,255,.1) !important;
-}
+        .tab-btn {
+            background: #020617 !important;
+            color: #94a3b8 !important;
+            border: 1px solid rgba(255, 255, 255, .08);
+        }
 
-.checkbox-group{background:#020617 !important}
+        .tab-btn.active {
+            background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
+            color: white !important;
+        }
 
-.chart-container{
-background:#020617 !important;
-box-shadow:0 10px 30px rgba(0,0,0,.7);
-}
+        .tab-content {
+            background: #020617 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .7);
+        }
 
-.chart-container h2{color:white}
+        .input-group input,
+        .input-group select {
+            background: #0f172a !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, .1) !important;
+        }
 
-.data-table th{
-background:#020617 !important;
-color:#94a3b8 !important;
-}
+        .checkbox-group {
+            background: #020617 !important
+        }
 
-.data-table td{
-color:#e5e7eb !important;
-border-bottom:1px solid rgba(255,255,255,.05);
-}
+        .chart-container {
+            background: #020617 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .7);
+        }
 
-.data-table tr:hover{
-background:#020617 !important;
-}
+        .chart-container h2 {
+            color: white
+        }
 
-.category-ai{
-background:#312e81 !important;
-color:#c7d2fe !important;
-}
+        .data-table th {
+            background: #020617 !important;
+            color: #94a3b8 !important;
+        }
 
-.source-idle{
-background:#1e293b !important;
-color:#93c5fd !important;
-}
+        .data-table td {
+            color: #e5e7eb !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+        }
 
-.source-completed{
-background:#022c22 !important;
-color:#34d399 !important;
-}
+        .data-table tr:hover {
+            background: #020617 !important;
+        }
 
-button{
-background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
-}
+        .category-ai {
+            background: #312e81 !important;
+            color: #c7d2fe !important;
+        }
 
-</style>
+        .source-idle {
+            background: #1e293b !important;
+            color: #93c5fd !important;
+        }
+
+        .source-completed {
+            background: #022c22 !important;
+            color: #34d399 !important;
+        }
+
+        button {
+            background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
         <header>
             <h1>Digital Carbon Footprint Dashboard</h1>
-            
+
         </header>
 
         <div id="loading">
@@ -670,8 +754,9 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             <!-- Manual Input Section -->
             <div class="manual-input-section">
                 <h2> Manual Activity Input</h2>
-                <p class="subtitle">Add activities that aren't automatically tracked for more accurate CO calculations</p>
-                
+                <p class="subtitle">Add activities that aren't automatically tracked for more accurate CO calculations
+                </p>
+
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('email')"> Email</button>
                     <button class="tab-btn" onclick="switchTab('video')"> Video</button>
@@ -686,24 +771,24 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             <label>Emails sent today:</label>
                             <input type="number" id="emailsSent" min="0" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Emails received/read today:</label>
                             <input type="number" id="emailsRead" min="0" placeholder="0" value="0">
                         </div>
                     </div>
-                    
+
                     <div class="checkbox-group">
                         <input type="checkbox" id="emailHasAttachments">
                         <label for="emailHasAttachments">Most emails had attachments (>1MB)</label>
                     </div>
-                    
+
                     <button class="btn-save" onclick="saveActivity('email')"> Save Email Data</button>
-                    
+
                     <div class="activity-result" id="emailResult">
                         <p> Email data saved! Estimated CO: <span class="co2-value" id="emailCO2">0.00</span> kg</p>
                     </div>
-                    
+
                     <div class="success-message" id="emailSuccess">
                         Data saved successfully and added to your carbon footprint!
                     </div>
@@ -716,12 +801,12 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             <label>Videos watched today:</label>
                             <input type="number" id="videosWatched" min="0" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Average video length (minutes):</label>
                             <input type="number" id="videoLength" min="1" placeholder="10" value="10">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Video quality:</label>
                             <select id="videoQuality">
@@ -731,13 +816,13 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             </select>
                         </div>
                     </div>
-                    
+
                     <button class="btn-save" onclick="saveActivity('video')"> Save Video Data</button>
-                    
+
                     <div class="activity-result" id="videoResult">
                         <p> Video data saved! Estimated CO: <span class="co2-value" id="videoCO2">0.00</span> kg</p>
                     </div>
-                    
+
                     <div class="success-message" id="videoSuccess">
                         Data saved successfully and added to your carbon footprint!
                     </div>
@@ -750,7 +835,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             <label>Hours of streaming today:</label>
                             <input type="number" id="streamingHours" min="0" step="0.5" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Streaming type:</label>
                             <select id="streamingType">
@@ -759,7 +844,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                                 <option value="gaming">Gaming (Twitch, Cloud Gaming)</option>
                             </select>
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Streaming quality:</label>
                             <select id="streamingQuality">
@@ -770,13 +855,14 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             </select>
                         </div>
                     </div>
-                    
+
                     <button class="btn-save" onclick="saveActivity('streaming')"> Save Streaming Data</button>
-                    
+
                     <div class="activity-result" id="streamingResult">
-                        <p> Streaming data saved! Estimated CO: <span class="co2-value" id="streamingCO2">0.00</span> kg</p>
+                        <p> Streaming data saved! Estimated CO: <span class="co2-value" id="streamingCO2">0.00</span> kg
+                        </p>
                     </div>
-                    
+
                     <div class="success-message" id="streamingSuccess">
                         Data saved successfully and added to your carbon footprint!
                     </div>
@@ -789,29 +875,29 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                             <label>Files uploaded today:</label>
                             <input type="number" id="filesUploaded" min="0" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Total upload size (MB):</label>
                             <input type="number" id="uploadSize" min="0" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Files downloaded today:</label>
                             <input type="number" id="filesDownloaded" min="0" placeholder="0" value="0">
                         </div>
-                        
+
                         <div class="input-group">
                             <label>Total download size (MB):</label>
                             <input type="number" id="downloadSize" min="0" placeholder="0" value="0">
                         </div>
                     </div>
-                    
+
                     <button class="btn-save" onclick="saveActivity('cloud')"> Save Cloud Data</button>
-                    
+
                     <div class="activity-result" id="cloudResult">
                         <p> Cloud data saved! Estimated CO: <span class="co2-value" id="cloudCO2">0.00</span> kg</p>
                     </div>
-                    
+
                     <div class="success-message" id="cloudSuccess">
                         Data saved successfully and added to your carbon footprint!
                     </div>
@@ -870,7 +956,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
     <script>
         let categoryChart, activityChart;
-        
+
         // CO emission factors
         const CO2_FACTORS = {
             email: {
@@ -911,7 +997,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
+
             event.target.classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
@@ -921,79 +1007,79 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             let co2 = 0;
             let activityData = {};
 
-            switch(activityType) {
+            switch (activityType) {
                 case 'email':
                     const emailsSent = parseInt(document.getElementById('emailsSent').value) || 0;
                     const emailsRead = parseInt(document.getElementById('emailsRead').value) || 0;
                     const hasAttachments = document.getElementById('emailHasAttachments').checked;
-                    
+
                     const emailFactor = hasAttachments ? CO2_FACTORS.email.attachment : CO2_FACTORS.email.text;
                     co2 = (emailsSent + emailsRead) * emailFactor;
-                    
+
                     activityData = {
                         sent: emailsSent,
                         read: emailsRead,
                         hasAttachments: hasAttachments,
                         co2: co2
                     };
-                    
+
                     document.getElementById('emailCO2').textContent = co2.toFixed(3);
                     document.getElementById('emailResult').classList.add('show');
                     document.getElementById('emailSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('emailSuccess').classList.remove('show'), 3000);
                     break;
-                    
+
                 case 'video':
                     const videosWatched = parseInt(document.getElementById('videosWatched').value) || 0;
                     const videoLength = parseInt(document.getElementById('videoLength').value) || 0;
                     const videoQuality = document.getElementById('videoQuality').value;
-                    
+
                     const totalHours = (videosWatched * videoLength) / 60;
                     co2 = totalHours * CO2_FACTORS.video[videoQuality];
-                    
+
                     activityData = {
                         count: videosWatched,
                         length: videoLength,
                         quality: videoQuality,
                         co2: co2
                     };
-                    
+
                     document.getElementById('videoCO2').textContent = co2.toFixed(3);
                     document.getElementById('videoResult').classList.add('show');
                     document.getElementById('videoSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('videoSuccess').classList.remove('show'), 3000);
                     break;
-                    
+
                 case 'streaming':
                     const streamingHours = parseFloat(document.getElementById('streamingHours').value) || 0;
                     const streamingType = document.getElementById('streamingType').value;
                     const streamingQuality = document.getElementById('streamingQuality').value;
-                    
+
                     co2 = streamingHours * CO2_FACTORS.streaming[streamingType][streamingQuality];
-                    
+
                     activityData = {
                         hours: streamingHours,
                         type: streamingType,
                         quality: streamingQuality,
                         co2: co2
                     };
-                    
+
                     document.getElementById('streamingCO2').textContent = co2.toFixed(3);
                     document.getElementById('streamingResult').classList.add('show');
                     document.getElementById('streamingSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('streamingSuccess').classList.remove('show'), 3000);
                     break;
-                    
+
                 case 'cloud':
                     const filesUploaded = parseInt(document.getElementById('filesUploaded').value) || 0;
                     const uploadSize = parseFloat(document.getElementById('uploadSize').value) || 0;
                     const filesDownloaded = parseInt(document.getElementById('filesDownloaded').value) || 0;
                     const downloadSize = parseFloat(document.getElementById('downloadSize').value) || 0;
-                    
+
                     const uploadCO2 = uploadSize * CO2_FACTORS.cloud.upload;
                     const downloadCO2 = downloadSize * CO2_FACTORS.cloud.download;
                     co2 = uploadCO2 + downloadCO2;
-                    
+
                     activityData = {
                         filesUploaded: filesUploaded,
                         uploadSize: uploadSize,
@@ -1001,7 +1087,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                         downloadSize: downloadSize,
                         co2: co2
                     };
-                    
+
                     document.getElementById('cloudCO2').textContent = co2.toFixed(3);
                     document.getElementById('cloudResult').classList.add('show');
                     document.getElementById('cloudSuccess').classList.add('show');
@@ -1011,7 +1097,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
             const manualData = {};
             manualData[activityType] = activityData;
-            
+
             try {
                 await fetch('http://localhost:5000/api/manual-activity', {
                     method: 'POST',
@@ -1020,7 +1106,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                     },
                     body: JSON.stringify(manualData)
                 });
-                
+
                 updateManualSummary();
                 setTimeout(() => refreshData(), 1000);
             } catch (error) {
@@ -1056,7 +1142,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                 await fetch('http://localhost:5000/api/reset-manual', {
                     method: 'POST'
                 });
-                
+
                 refreshData();
             } catch (error) {
                 console.error('Failed to reset manual data:', error);
@@ -1073,7 +1159,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
                 document.getElementById('totalCO2').textContent = data.total_co2.toFixed(2);
                 document.getElementById('totalEnergy').textContent = data.total_energy.toFixed(3);
-                
+
                 const statusBadge = document.getElementById('statusBadge');
                 statusBadge.textContent = data.status;
                 statusBadge.className = 'status-badge status-' + data.status.toLowerCase().replace(' ', '-');
@@ -1091,7 +1177,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
 
         function updateManualSummaryDisplay(breakdown) {
             const manualActivities = breakdown.filter(item => item.source === 'manual_input');
-            
+
             if (manualActivities.length === 0) {
                 document.getElementById('manualSummary').classList.remove('show');
                 return;
@@ -1132,7 +1218,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             });
 
             const ctx = document.getElementById('categoryChart').getContext('2d');
-            
+
             if (categoryChart) {
                 categoryChart.destroy();
             }
@@ -1170,7 +1256,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             const top10 = breakdown.slice(0, 10);
 
             const ctx = document.getElementById('activityChart').getContext('2d');
-            
+
             if (activityChart) {
                 activityChart.destroy();
             }
@@ -1208,17 +1294,18 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             breakdown.forEach(item => {
                 const isManual = item.source === 'manual_input';
                 const isRunning = item.status === 'running';
-                
+                const isIdle = item.status === 'idle';
+
                 // Source badge
                 let sourceBadge;
                 if (isRunning) {
                     sourceBadge = '<span class="source-badge source-running">Running</span>';
-                } else if (item.time === 0) {
+                } else if (isIdle) {
                     sourceBadge = '<span class="source-badge source-idle">Idle</span>';
                 } else {
                     sourceBadge = '<span class="source-badge source-completed">Completed</span>';
                 }
-                
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.name}</td>
@@ -1228,12 +1315,12 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
                     <td>${item.co2.toFixed(4)}</td>
                     <td>${sourceBadge}</td>
                 `;
-                
+
                 // Highlight running apps
                 if (isRunning) {
                     row.style.backgroundColor = '#fffacd';
                 }
-                
+
                 tbody.appendChild(row);
             });
         }
@@ -1241,7 +1328,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
-            
+
             if (hours > 0) {
                 return `${hours}h ${minutes}m`;
             }
@@ -1259,7 +1346,7 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
             if (!confirm('Are you sure you want to reset ALL tracking data? This includes both automatic and manual data and cannot be undone.')) {
                 return;
             }
-            
+
             await fetch('http://localhost:5000/api/reset', { method: 'POST' });
             await resetManualData();
             refreshData();
@@ -1288,13 +1375,13 @@ background:linear-gradient(90deg,#2563eb,#7c3aed) !important;
         }, 30000);
     </script>
 
-<script>
+    <script>
 
-function showEmailModal(){
+        function showEmailModal() {
 
-let modal = document.createElement("div");
+            let modal = document.createElement("div");
 
-modal.innerHTML = `
+            modal.innerHTML = `
 <div style="
 position:fixed;
 top:0;
@@ -1332,54 +1419,55 @@ Submit
 </div>
 `;
 
-document.body.appendChild(modal);
-window.emailModal = modal;
-}
-
-function submitEmailPopup(){
-
-let count = parseInt(document.getElementById("popupEmailCount").value) || 0;
-
-fetch("/api/manual-activity",{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-email:{
-sent:count,
-read:0,
-co2:count * 0.004
-}
-})
-});
-
-window.emailModal.remove();
-refreshData();
-}
-
-setInterval(async()=>{
-try{
-let r = await fetch("/api/email-popup");
-let d = await r.json();
-if(d.popup){
-showEmailModal();
-}
-}catch{}
-},5000);
-
-</script>
-
-
-<script>
-setInterval(async () => {
-    try{
-        let r = await fetch("/api/email-popup")
-        let d = await r.json()
-        if(d.show){
-            alert("Email activity detected. Please enter manual email usage.")
+            document.body.appendChild(modal);
+            window.emailModal = modal;
         }
-    }catch(e){}
-},4000)
-</script>
+
+        function submitEmailPopup() {
+
+            let count = parseInt(document.getElementById("popupEmailCount").value) || 0;
+
+            fetch("/api/manual-activity", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: {
+                        sent: count,
+                        read: 0,
+                        co2: count * 0.004
+                    }
+                })
+            });
+
+            window.emailModal.remove();
+            refreshData();
+        }
+
+        setInterval(async () => {
+            try {
+                let r = await fetch("/api/email-popup");
+                let d = await r.json();
+                if (d.popup) {
+                    showEmailModal();
+                }
+            } catch { }
+        }, 5000);
+
+    </script>
+
+
+    <script>
+        setInterval(async () => {
+            try {
+                let r = await fetch("/api/email-popup")
+                let d = await r.json()
+                if (d.show) {
+                    alert("Email activity detected. Please enter manual email usage.")
+                }
+            } catch (e) { }
+        }, 4000)
+    </script>
 
 </body>
+
 </html>
