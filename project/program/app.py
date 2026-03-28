@@ -96,33 +96,14 @@ SYSTEM_PROCESS_PATTERNS = [
 
 model = joblib.load("co2_model.pkl")
 
-def predict_co2(duration,cpu_usage,idle_time,category):
-    hour = datetime.now().hour
-    category_map = {
-        'video':0,
-        'meeting':1,
-        'email':2,
-        'work':3,
-        'social':4,
-        'browsing':5,
-        'streaming':6,
-        'design':7,
-        'ai':8,
-        'other':9
-    }
-
-    category_encoded = category_map.get(category,9)
-
+def predict_co2(duration, cpu_usage, idle_time, hour):
     prediction = model.predict([[
         duration,
         cpu_usage,
         idle_time,
-        hour,
-        category_encoded
+        hour
     ]])
-
     return float(prediction[0])
-
 
 
 def log_usage_data(app_name, category, duration, cpu, idle, co2):
@@ -435,54 +416,93 @@ def track_system_activity():
 
 @app.route("/api/predict-next-hour")
 def predict_next_hour():
-    predicted_total = 0
-    for identifer,data in activity_data.items():
+    next_hour = (datetime.now().hour + 1) % 24
+
+    total_duration = 0
+    total_cpu = 0
+    total_idle = 0
+    count = 0
+
+    for identifier, data in activity_data.items():
         live = _live_time(data)
-        
-        predicted = predict_co2(
-            live,
-            data.get("cpu_usage",0),
-            data.get("idle_total",0),
-            data.get("category","other")
-        )
 
-        predicted_total += predicted
+        if live <= 0:
+            continue
 
-        return jsonify({
-            "predicted_next_hour_co2": predicted_total
-        })
+        total_duration += live
+        total_cpu += data.get("cpu_usage", 0)
+        total_idle += data.get("idle_total", 0)
+        count += 1
 
+    if count == 0:
+        return jsonify({"predicted_next_hour_co2": 0})
+
+    avg_cpu = total_cpu / count
+
+    # 🔥 ONE prediction for whole system
+    prediction = predict_co2(
+        3600,          # full hour
+        avg_cpu,
+        total_idle,
+        next_hour
+    )
+
+    return jsonify({
+        "predicted_next_hour_co2": prediction
+    })
 @app.route("/api/predict-today")
 def predict_today():
     current_co2 = 0
-    predicted_remaining = 0
-    current_hour = datetime.now().hour
 
-    for identifier,data in activity_data.items():
+    total_duration = 0
+    total_cpu = 0
+    total_idle = 0
+    count = 0
+
+    # 🔹 Calculate current CO2 (real)
+    for identifier, data in activity_data.items():
         live = _live_time(data)
+
         energy = calculate_energy(
             data["category"],
             live,
-            data.get("cpu_usage",0)
+            data.get("cpu_usage", 0)
         )
 
         co2 = energy * config["emission_factor"]
         current_co2 += co2
 
-        for h in range(current_hour+1,24):
-            predicted = predict_co2(
-                live,
-                data.get("cpu_usage",0),
-                data.get("idle_total",0),
-                data.get("category","other")
-            )
-            predicted_remaining += predicted
-    
-    return jsonify({
-        "current_co2": current_co2,
-        "predicted_today_total_co2": current_co2 +predicted_remaining
-    })
+        if live > 0:
+            total_duration += live
+            total_cpu += data.get("cpu_usage", 0)
+            total_idle += data.get("idle_total", 0)
+            count += 1
 
+    if count == 0:
+        return jsonify({
+            "current_co2": 0,
+            "predicted_today_total_co2": 0
+        })
+
+    avg_cpu = total_cpu / count
+
+    # 🔥 Predict remaining hours
+    current_hour = datetime.now().hour
+    predicted_remaining = 0
+
+    for h in range(current_hour + 1, 24):
+        pred = predict_co2(
+            3600,
+            avg_cpu,
+            total_idle,
+            h
+        )
+        predicted_remaining += pred
+
+    return jsonify({
+        "current_co2": float(current_co2),
+        "predicted_today_total_co2": float(current_co2 + predicted_remaining)
+    })
 @app.route("/api/ai-suggestions")
 def ai_suggestions():
 
