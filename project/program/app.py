@@ -84,7 +84,8 @@ SYSTEM_PROCESSES_BLACKLIST = {
     'migration', 'watchdog', 'cpuhp', 'kdevtmpfs', 'netns', 'khungtaskd',
     'oom_reaper', 'writeback', 'kcompactd', 'kblockd', 'kintegrityd',
     'idle', 'system32', 'syswow64', 'backgroundtaskhost.exe',
-    'taskmgr.exe', 'perfmon.exe', 'resmon.exe', 'mmc.exe',
+    'taskmgr.exe', 'perfmon.exe', 'resmon.exe', 'mmc.exe','rtkuwp.exe',
+    'aqauserps.exe'
 }
 
 SYSTEM_PROCESS_PATTERNS = [
@@ -92,6 +93,7 @@ SYSTEM_PROCESS_PATTERNS = [
     'svc', 'host', 'service', 'driver', 'helper', 'agent',
     'daemon', 'background', 'runtime', 'broker', 'protocol',
     'cmd','overlay','nvidia','overlay','radeon','acer','setup',
+    'software'
 ]
 
 model = joblib.load("co2_model.pkl")
@@ -571,6 +573,7 @@ def add_activity():
     last_activity_time = time.time()
 
     return jsonify({'status': 'success'}), 200
+
 
 
 @app.route('/api/manual-activity', methods=['POST'])

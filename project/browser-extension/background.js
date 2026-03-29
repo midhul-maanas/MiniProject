@@ -1,247 +1,9 @@
-// let currentTabId = null;
-// let currentUrl = null;
-// let startTime = null;
-// let isIdle = false;
-// let currentStatus = 'completed';  // ✅ NEW: Track status
 
-// chrome.runtime.onInstalled.addListener(() => {
-//   console.log('Digital Carbon Footprint Tracker installed');
-//   initializeStorage();
-// });
-
-// async function initializeStorage() {
-//   const data = await chrome.storage.local.get(['activityData', 'config']);
-
-//   if (!data.activityData) {
-//     await chrome.storage.local.set({ activityData: {} });
-//   }
-
-//   if (!data.config) {
-//     await chrome.storage.local.set({
-//       config: {
-//         region: 'global',
-//         emissionFactor: 0.475,
-//         trackingEnabled: true
-//       }
-//     });
-//   }
-// }
-
-// chrome.tabs.onActivated.addListener(async (activeInfo) => {
-//   await saveCurrentActivity();
-
-//   const tab = await chrome.tabs.get(activeInfo.tabId);
-//   startTracking(tab.id, tab.url);
-// });
-
-// chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-//   if (changeInfo.url && tabId === currentTabId) {
-//     await saveCurrentActivity();
-//     startTracking(tabId, changeInfo.url);
-//   }
-// });
-
-// chrome.windows.onFocusChanged.addListener(async (windowId) => {
-//   if (windowId === chrome.windows.WINDOW_ID_NONE) {
-//     await saveCurrentActivity();
-//     currentTabId = null;
-//     currentUrl = null;
-//     currentStatus = 'completed';  // ✅ Window lost focus = completed
-//   } else {
-//     const [tab] = await chrome.tabs.query({ active: true, windowId: windowId });
-//     if (tab) {
-//       startTracking(tab.id, tab.url);
-//     }
-//   }
-// });
-
-// chrome.idle.onStateChanged.addListener((state) => {
-//   const domain = extractDomain(currentUrl);
-//   const category = categorizeWebsite(domain);
-
-//   // ✅ FIXED: Never mark video/meeting/streaming as idle
-//   if (category === 'video' || category === 'meeting' || category === 'streaming') {
-//     isIdle = false;
-//     currentStatus = 'running';  // ✅ Always running
-//     return;
-//   }
-
-//   // For other categories, handle idle normally
-//   const wasIdle = isIdle;
-//   isIdle = (state === 'idle' || state === 'locked');
-
-//   if (isIdle && !wasIdle) {
-//     // ✅ Entering idle state
-//     currentStatus = 'idle';
-//     saveCurrentActivity();  // Save with 'idle' status
-//   } else if (!isIdle && wasIdle) {
-//     // ✅ Exiting idle state (resume)
-//     currentStatus = 'running';
-//     if (currentTabId && currentUrl) {
-//       startTime = Date.now();  // Resume tracking
-//     }
-//   }
-// });
-
-// // ✅ Listen for tab close
-// chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
-//   if (tabId === currentTabId) {
-//     currentStatus = 'completed';  // ✅ Tab closed
-//     await saveCurrentActivity();
-//     currentTabId = null;
-//     currentUrl = null;
-//     startTime = null;
-//   }
-// });
-
-// function startTracking(tabId, url) {
-//   if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://')) {
-//     return;
-//   }
-
-//   currentTabId = tabId;
-//   currentUrl = url;
-//   startTime = Date.now();
-
-//   const domain = extractDomain(url);
-//   const category = categorizeWebsite(domain);
-
-//   // ✅ Set initial status based on category
-//   if (category === 'video' || category === 'meeting' || category === 'streaming') {
-//     currentStatus = 'running';  // Always running, never idle
-//     isIdle = false;
-//   } else {
-//     currentStatus = 'running';  // Normal running
-//   }
-
-//   console.log(`Started tracking: ${domain} (${category}) - Status: ${currentStatus}`);
-// }
-
-// async function saveCurrentActivity() {
-//   if (!currentUrl || !startTime) {
-//     return;
-//   }
-
-//   const endTime = Date.now();
-//   const duration = (endTime - startTime) / 1000;
-
-//   // ✅ Save even if idle (with idle status)
-//   if (duration < 1) return;
-
-//   const domain = extractDomain(currentUrl);
-//   const category = categorizeWebsite(domain);
-
-//   const data = await chrome.storage.local.get(['activityData']);
-//   const activityData = data.activityData || {};
-
-//   if (!activityData[domain]) {
-//     activityData[domain] = {
-//       totalTime: 0,
-//       visits: 0,
-//       category: category,
-//       lastVisit: endTime,
-//       status: currentStatus  // ✅ Store status
-//     };
-//   }
-
-//   activityData[domain].totalTime += duration;
-//   activityData[domain].visits += 1;
-//   activityData[domain].lastVisit = endTime;
-//   activityData[domain].status = currentStatus;  // ✅ Update status
-
-//   await chrome.storage.local.set({ activityData });
-
-//   console.log(`${domain} (${category}) - Duration: ${duration}s - Status: ${currentStatus}`);
-
-//   sendToBackend(domain, duration, currentStatus);
-// }
-
-// function extractDomain(url) {
-//   try {
-//     const urlObj = new URL(url);
-//     return urlObj.hostname.replace('www.', '');
-//   } catch (e) {
-//     return 'unknown';
-//   }
-// }
-
-// function categorizeWebsite(domain) {
-//   const categories = {
-//     'video': ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com'],
-//     'social': ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com'],
-//     'email': ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com'],
-//     'meeting': ['zoom.us', 'meet.google.com', 'teams.microsoft.com', 'webex.com'],
-//     'cloud': ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com'],
-//     'work': ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com'],
-//     'streaming': ['spotify.com', 'music.youtube.com', 'soundcloud.com', 'apple.com/music'],  // ✅ Added streaming
-//     'ai': ['chatgpt.com', 'openai.com', 'gemini.google.com', 'bard.google.com', 'claude.ai', 'copilot.microsoft.com', 'perplexity.ai', 'grok.com'],
-//   };
-
-//   for (const [category, domains] of Object.entries(categories)) {
-//     if (domains.some(d => domain.includes(d))) {
-//       return category;
-//     }
-//   }
-
-//   return 'browsing';
-// }
-
-// async function sendToBackend(domain, duration, status) {
-//   try {
-//     await fetch('http://localhost:5000/api/activity', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         source: 'browser',
-//         domain: domain,
-//         duration: duration,
-//         timestamp: Date.now(),
-//         category: categorizeWebsite(domain),
-//         status: status  // ✅ Send status to backend
-//       })
-//     });
-//   } catch (error) {
-//     console.error('Failed to send data to backend:', error);
-//   }
-// }
-
-// // ✅ FIXED: Periodic save with proper idle handling
-// setInterval(async () => {
-//   if (!currentUrl || !currentTabId) {
-//     return;
-//   }
-
-//   const domain = extractDomain(currentUrl);
-//   const category = categorizeWebsite(domain);
-
-//   // ✅ Video/meeting/streaming: Always save, never idle
-//   if (category === 'video' || category === 'meeting' || category === 'streaming') {
-//     isIdle = false;
-//     currentStatus = 'running';
-//     await saveCurrentActivity();
-//     startTime = Date.now();  // Reset for next interval
-//     return;
-//   }
-
-//   // ✅ Other categories: Only save if not idle
-//   if (!isIdle) {
-//     currentStatus = 'running';
-//     await saveCurrentActivity();
-//     startTime = Date.now();  // Reset for next interval
-//   } else {
-//     // ✅ If idle, just update status but don't save duration
-//     currentStatus = 'idle';
-//   }
-// }, 15000);  // Every 15 seconds
-
+let tabStates = {};
 let currentTabId = null;
 let currentUrl = null;
-let startTime = null;
-let isIdle = false;
-let currentStatus = 'completed';
-let tabUrls = {};
+
+const IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes, matches config default
 
 // --- Initialization ---
 
@@ -258,162 +20,35 @@ async function initializeStorage() {
       config: {
         region: 'global',
         emissionFactor: 0.475,
-        trackingEnabled: true
+        trackingEnabled: true,
+        idleThresholdSeconds: 300 // 5 minutes
       }
     });
   }
+  await syncIdleDetectionInterval();
 }
 
-// --- Event Listeners ---
-
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  await saveCurrentActivity();
-  try {
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab && tab.url) {
-      startTracking(tab.id, tab.url);
-    }
-  } catch (error) {
-    console.error("Error on tab activation:", error);
-  }
-});
-
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    tabUrls[tabId] = changeInfo.url;
-    if (tabId === currentTabId) {
-      await saveCurrentActivity();
-      startTracking(tabId, changeInfo.url);
-    }
-  }
-});
-
-chrome.windows.onFocusChanged.addListener(async (windowId) => {
-  if (windowId === chrome.windows.WINDOW_ID_NONE) {
-    currentStatus = 'completed';
-    await saveCurrentActivity();
-    resetTrackingState();
-  } else {
-    const [tab] = await chrome.tabs.query({ active: true, windowId });
-    if (tab) startTracking(tab.id, tab.url);
-  }
-});
-
-chrome.tabs.onRemoved.addListener(async (tabId) => {
-  const closedUrl = tabUrls[tabId];
-  if (tabId === currentTabId) {
-    currentStatus = 'completed';
-    await saveCurrentActivity();
-    resetTrackingState();
-    console.log("Active tab closed -> completed");
-  } else if (closedUrl) {
-    // Notify backend that an inactive tab was closed
-    sendToBackend(extractDomain(closedUrl), 0, 'completed');
-    console.log(`Inactive tab closed -> completed: ${extractDomain(closedUrl)}`);
-  }
-  delete tabUrls[tabId];
-});
-
-chrome.idle.onStateChanged.addListener(async (state) => {
-  if (!currentUrl) return;
-
-  const category = categorizeWebsite(extractDomain(currentUrl));
-  const isMedia = ['video', 'meeting', 'streaming'].includes(category);
-
-  if (isMedia) {
-    isIdle = false;
-    currentStatus = 'running';
-    return;
-  }
-
-  if (state === 'idle' || state === 'locked') {
-    if (!isIdle) {
-      isIdle = true;
-      currentStatus = 'idle';
-      await saveCurrentActivity();
-    }
-  } else {
-    if (isIdle) {
-      isIdle = false;
-      currentStatus = 'running';
-      startTime = Date.now();
-    }
-  }
-});
-
-// --- Core Logic Functions ---
-
-function startTracking(tabId, url) {
-  if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://')) return;
-
-  currentTabId = tabId;
-  currentUrl = url;
-  startTime = Date.now();
-  tabUrls[tabId] = url;
-
-  const category = categorizeWebsite(extractDomain(url));
-  currentStatus = 'running';
-  isIdle = false;
-
-  console.log(`Tracking: ${extractDomain(url)} (${category})`);
-  sendToBackend(extractDomain(url), 0, 'running');
-}
-
-async function saveCurrentActivity() {
-  if (!currentUrl || !startTime) return;
-
-  const endTime = Date.now();
-  const duration = (endTime - startTime) / 1000;
-  if (duration < 0.5) return; // Ignore micro-durations
-
-  const domain = extractDomain(currentUrl);
-  const category = categorizeWebsite(domain);
-
-  const data = await chrome.storage.local.get(['activityData']);
-  const activityData = data.activityData || {};
-
-  if (!activityData[domain]) {
-    activityData[domain] = { totalTime: 0, visits: 0, category, lastVisit: endTime, status: currentStatus };
-  }
-
-  activityData[domain].totalTime += duration;
-  activityData[domain].visits += 1;
-  activityData[domain].lastVisit = endTime;
-  activityData[domain].status = currentStatus;
-
-  await chrome.storage.local.set({ activityData });
-  sendToBackend(domain, duration, currentStatus);
-}
-
-function resetTrackingState() {
-  currentTabId = null;
-  currentUrl = null;
-  startTime = null;
-  isIdle = false;
+async function syncIdleDetectionInterval() {
+  const { config } = await chrome.storage.local.get('config');
+  const threshold = config?.idleThresholdSeconds ?? 300;
+  chrome.idle.setDetectionInterval(Math.max(15, threshold));
 }
 
 // --- Helpers ---
 
 function extractDomain(url) {
   try {
-    const urlObj = new URL(url);
-    return urlObj.hostname.replace('www.', '');
+    const domain = new URL(url).hostname.replace('www.', '');
+    if (domain === 'localhost' || domain === 'newtab' || url.startsWith('chrome://newtab')) {
+      return null;
+    }
+    return domain;
   } catch {
     return 'unknown';
   }
 }
 
 function categorizeWebsite(domain) {
-  // const categories = {
-  //   video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com'],
-  //   social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com'],
-  //   email: ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com'],
-  //   meeting: ['zoom.us', 'meet.google.com', 'teams.microsoft.com', 'webex.com'],
-  //   cloud: ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com'],
-  //   work: ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com'],
-  //   streaming: ['music.youtube.com', 'soundcloud.com', 'spotify.com', 'deezer.com'],
-  //   ai: ['chatgpt.com', 'openai.com', 'gemini.google.com', 'claude.ai', 'perplexity.ai', 'grok.com']
-  // };
   const categories = {
     video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com', 'hotstar.com', 'sonyliv.com', 'zee5.com'],
     social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com', 'snapchat.com', 'discord.com', 'web.whatsapp.com'],
@@ -436,18 +71,19 @@ function categorizeWebsite(domain) {
   return 'browsing';
 }
 
-async function sendToBackend(domain, duration, status) {
+async function sendToBackend(domain, duration, status, totalTime = 0) {
   try {
     await fetch('http://localhost:5000/api/activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         source: 'browser',
-        domain: domain,
-        duration: duration,
+        domain,
+        duration,
+        totalTime,
         timestamp: Date.now(),
         category: categorizeWebsite(domain),
-        status: status
+        status
       })
     });
   } catch (error) {
@@ -455,19 +91,278 @@ async function sendToBackend(domain, duration, status) {
   }
 }
 
-// --- Heartbeat ---
+
+// --- Core Logic Functions ---
+
+function initTabState(tabId, url, status = 'running') {
+  tabStates[tabId] = {
+    url,
+    category: categorizeWebsite(extractDomain(url)),
+    status,
+    totalTime: 0,
+    segmentStart: status === 'running' ? Date.now() : null,
+    backgroundSince: status === 'running' ? null : Date.now(), // track when sent to background
+    visits: 1,
+    lastVisit: Date.now()
+  };
+}
+
+/**
+ * Flush the current active segment's time into totalTime.
+ * Does NOT reset totalTime — only closes the open segment.
+ */
+async function flushTabTime(tabId) {
+  const state = tabStates[tabId];
+  if (!state || !state.segmentStart || state.status !== 'running') return;
+
+  const segmentDuration = (Date.now() - state.segmentStart) / 1000;
+  if (segmentDuration >= 0.5) {
+    state.totalTime += segmentDuration;
+  }
+  state.segmentStart = null;
+
+  await persistTabToStorage(tabId);
+  sendToBackend(extractDomain(state.url), segmentDuration, state.status, state.totalTime);
+}
+
+/**
+ * Resume an existing tab (switching back to it) or start fresh if unknown.
+ * totalTime is preserved — only segmentStart resets.
+ */
+async function resumeOrStartTab(tabId, url) {
+  if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://')) return;
+
+  if (tabStates[tabId] && tabStates[tabId].url === url) {
+    // Known tab — resume without resetting totalTime
+    const state = tabStates[tabId];
+    state.status = 'running';
+    state.segmentStart = Date.now();
+    state.backgroundSince = null; // no longer in background
+    state.visits += 1;
+    state.lastVisit = Date.now();
+    console.log(`Tab ${tabId} resumed: ${extractDomain(url)} (totalTime: ${state.totalTime.toFixed(1)}s)`);
+  } else {
+    // New or navigated tab — carry forward previous totalTime for this domain
+    initTabState(tabId, url, 'running');
+    const domain = extractDomain(url);
+    const { activityData = {} } = await chrome.storage.local.get('activityData');
+    if (activityData[domain] && activityData[domain].totalTime > 0) {
+      tabStates[tabId].totalTime = activityData[domain].totalTime;
+      tabStates[tabId].visits = (activityData[domain].visits || 0) + 1;
+      console.log(`Tab ${tabId} started: ${domain} (resumed totalTime: ${tabStates[tabId].totalTime.toFixed(1)}s)`);
+    } else {
+      console.log(`Tab ${tabId} started: ${domain} (fresh)`);
+    }
+  }
+
+  sendToBackend(extractDomain(url), 0, 'running', tabStates[tabId].totalTime);
+  await persistTabToStorage(tabId);
+}
+
+/**
+ * Send a tab to background — flush its time, set backgroundSince,
+ * but keep status as 'running' until the threshold elapses.
+ */
+async function sendTabToBackground(tabId) {
+  const state = tabStates[tabId];
+  if (!state) return;
+
+  await flushTabTime(tabId);         // save the segment time accumulated so far
+  state.backgroundSince = Date.now(); // start the background idle clock
+  // status stays 'running' — heartbeat will flip to 'idle' after threshold
+  console.log(`Tab ${tabId} sent to background: ${extractDomain(state.url)} (status stays running for now)`);
+}
+
+async function persistTabToStorage(tabId) {
+  const state = tabStates[tabId];
+  if (!state) return;
+
+  const domain = extractDomain(state.url);
+  const { activityData = {} } = await chrome.storage.local.get('activityData');
+
+  if (!activityData[domain]) {
+    activityData[domain] = { totalTime: 0, visits: 0, category: state.category, lastVisit: state.lastVisit, status: state.status };
+  }
+
+  activityData[domain].totalTime = state.totalTime;
+  activityData[domain].visits = state.visits;
+  activityData[domain].lastVisit = state.lastVisit;
+  activityData[domain].status = state.status;
+
+  await chrome.storage.local.set({ activityData });
+}
+
+// --- Event Listeners ---
+
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  const previousTabId = currentTabId;
+
+  // Send previous tab to background (status stays 'running' until threshold)
+  if (previousTabId && tabStates[previousTabId]) {
+    await sendTabToBackground(previousTabId);
+  }
+
+  currentTabId = activeInfo.tabId;
+
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    if (tab?.url) {
+      currentUrl = tab.url;
+      await resumeOrStartTab(activeInfo.tabId, tab.url);
+    }
+  } catch (error) {
+    console.error("Error on tab activation:", error);
+  }
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (!changeInfo.url) return;
+
+  if (tabId === currentTabId) {
+    await flushTabTime(tabId);
+    currentUrl = changeInfo.url;
+    initTabState(tabId, changeInfo.url, 'running');
+    sendToBackend(extractDomain(changeInfo.url), 0, 'running', 0);
+  } else {
+    // Background tab navigated — reset state, preserve background clock
+    initTabState(tabId, changeInfo.url, 'running');
+    tabStates[tabId].segmentStart = null;
+    tabStates[tabId].backgroundSince = Date.now();
+  }
+});
+
+chrome.windows.onFocusChanged.addListener(async (windowId) => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    // Window lost focus — send current tab to background
+    if (currentTabId && tabStates[currentTabId]) {
+      await sendTabToBackground(currentTabId);
+    }
+  } else {
+    const [tab] = await chrome.tabs.query({ active: true, windowId });
+    if (tab) {
+      currentTabId = tab.id;
+      currentUrl = tab.url;
+      await resumeOrStartTab(tab.id, tab.url);
+    }
+  }
+});
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  // Clear active-tab pointer FIRST to prevent onActivated race condition.
+  // If onActivated fires for the next tab before onRemoved finishes,
+  // it would try to sendTabToBackground(currentTabId) — which is the
+  // now-dead tab — corrupting its segment.
+  const wasActiveTab = (tabId === currentTabId);
+  if (wasActiveTab) {
+    currentTabId = null;
+    currentUrl = null;
+  }
+
+  const state = tabStates[tabId];
+  if (state) {
+    // Force-flush any open segment regardless of status.
+    // flushTabTime() guards on status === 'running', but the active tab
+    // might have been marked 'idle' by chrome.idle while still having an
+    // open segmentStart (edge case). We handle it directly here.
+    if (state.segmentStart) {
+      const now = Date.now();
+      const segmentDuration = (now - state.segmentStart) / 1000;
+      if (segmentDuration >= 0.5) {
+        state.totalTime += segmentDuration;
+      }
+      state.segmentStart = null;
+    }
+
+    // Mark completed and persist
+    state.status = 'completed';
+    const domain = extractDomain(state.url);
+
+    await persistTabToStorage(tabId);
+    await sendToBackend(domain, 0, 'completed', state.totalTime);
+
+    console.log(`Tab ${tabId} closed -> completed (${domain}, totalTime: ${state.totalTime.toFixed(1)}s, wasActive: ${wasActiveTab})`);
+    delete tabStates[tabId];
+  }
+});
+
+
+chrome.idle.onStateChanged.addListener(async (state) => {
+  if (!currentTabId || !tabStates[currentTabId]) return;
+
+  const category = tabStates[currentTabId].category;
+  const isMedia = ['video', 'meeting', 'streaming'].includes(category);
+  if (isMedia) return;
+
+  if (state === 'idle' || state === 'locked') {
+    await flushTabTime(currentTabId);
+    tabStates[currentTabId].status = 'idle';
+    tabStates[currentTabId].backgroundSince = Date.now();
+    sendToBackend(
+      extractDomain(tabStates[currentTabId].url),
+      0, 'idle',
+      tabStates[currentTabId].totalTime
+    );
+  } else if (state === 'active') {
+    if (tabStates[currentTabId].status === 'idle') {
+      tabStates[currentTabId].status = 'running';
+      tabStates[currentTabId].segmentStart = Date.now();
+      tabStates[currentTabId].backgroundSince = null;
+      sendToBackend(
+        extractDomain(tabStates[currentTabId].url),
+        0, 'running',
+        tabStates[currentTabId].totalTime
+      );
+    }
+  }
+});
+
+// --- Heartbeat (every 15s) ---
 
 setInterval(async () => {
-  if (!currentUrl || !currentTabId || !startTime) return;
+  const { config } = await chrome.storage.local.get('config');
+  const idleThresholdMs = (config?.idleThresholdSeconds ?? 300) * 1000;
+  const now = Date.now();
 
-  const category = categorizeWebsite(extractDomain(currentUrl));
-  const isMedia = ['video', 'meeting', 'streaming'].includes(category);
+  for (const [tabIdStr, state] of Object.entries(tabStates)) {
+    const tabId = parseInt(tabIdStr);
+    const domain = extractDomain(state.url);
+    const isMedia = ['video', 'meeting', 'streaming'].includes(state.category);
 
-  if (isMedia || !isIdle) {
-    await saveCurrentActivity();
-    startTime = Date.now();
-  } else {
-    // Send periodic idle pulse to keep backend status accurate
-    sendToBackend(extractDomain(currentUrl), 0, 'idle');
+    if (tabId === currentTabId) {
+      // --- Active tab ---
+      if (isMedia || state.status === 'running') {
+        // Flush and restart segment
+        await flushTabTime(tabId);
+        state.segmentStart = Date.now();
+      }
+    } else {
+      // --- Background tab ---
+      const timeInBackground = state.backgroundSince ? now - state.backgroundSince : Infinity;
+
+      if (isMedia) {
+        // Media tabs (video/streaming/meeting) NEVER go idle — always running
+        if (state.status === 'idle') {
+          state.status = 'running';
+          state.segmentStart = null;
+          state.backgroundSince = now;
+        }
+        sendToBackend(domain, 0, 'running', state.totalTime);
+        console.log(`Background media tab ${tabId} always running: ${domain}`);
+      } else if (state.status === 'running' && timeInBackground >= idleThresholdMs) {
+        // Threshold crossed — flip to idle
+        state.status = 'idle';
+        await persistTabToStorage(tabId);
+        sendToBackend(domain, 0, 'idle', state.totalTime);
+        console.log(`Background tab ${tabId} idle after ${Math.round(timeInBackground / 1000)}s: ${domain}`);
+      } else if (state.status === 'running') {
+        // Still within threshold — send running pulse with time remaining
+        const remaining = Math.round((idleThresholdMs - timeInBackground) / 1000);
+        sendToBackend(domain, 0, 'running', state.totalTime);
+        console.log(`Background tab ${tabId} still running, ${remaining}s until idle: ${domain}`);
+      } else if (state.status === 'idle') {
+        // Already idle — periodic idle pulse
+        sendToBackend(domain, 0, 'idle', state.totalTime);
+      }
+    }
   }
 }, 15000);
