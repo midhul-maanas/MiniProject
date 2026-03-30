@@ -844,6 +844,11 @@
 
         .source-completed {
             background: #022c22 !important;
+            color: #ea5d06 !important;
+        }
+
+        .source-manual {
+            background: #022c22 !important;
             color: #34d399 !important;
         }
 
@@ -1161,16 +1166,8 @@
                     <div class="tab-content" id="cloud-tab">
                         <div class="input-grid">
                             <div class="input-group">
-                                <label>Files uploaded today:</label>
-                                <input type="number" id="filesUploaded" min="0" placeholder="0" value="0">
-                            </div>
-                            <div class="input-group">
                                 <label>Total upload size (MB):</label>
                                 <input type="number" id="uploadSize" min="0" placeholder="0" value="0">
-                            </div>
-                            <div class="input-group">
-                                <label>Files downloaded today:</label>
-                                <input type="number" id="filesDownloaded" min="0" placeholder="0" value="0">
                             </div>
                             <div class="input-group">
                                 <label>Total download size (MB):</label>
@@ -1288,7 +1285,7 @@
                 video: { low: 0.100, medium: 0.300, high: 0.600, '4k': 1.200 },
                 gaming: { low: 0.200, medium: 0.400, high: 0.800, '4k': 1.600 }
             },
-            cloud: { upload: 0.00011, download: 0.00007 }
+            cloud: { upload: 0.00003, download: 0.00003 }
         };
 
         function switchTab(tabName) {
@@ -1342,12 +1339,10 @@
                     break;
                 }
                 case 'cloud': {
-                    const filesUploaded = parseInt(document.getElementById('filesUploaded').value) || 0;
                     const uploadSize = parseFloat(document.getElementById('uploadSize').value) || 0;
-                    const filesDownloaded = parseInt(document.getElementById('filesDownloaded').value) || 0;
                     const downloadSize = parseFloat(document.getElementById('downloadSize').value) || 0;
                     co2 = (uploadSize * CO2_FACTORS.cloud.upload) + (downloadSize * CO2_FACTORS.cloud.download);
-                    activityData = { filesUploaded, uploadSize, filesDownloaded, downloadSize, co2 };
+                    activityData = { uploadSize, downloadSize, co2 };
                     document.getElementById('cloudCO2').textContent = co2.toFixed(3);
                     document.getElementById('cloudResult').classList.add('show');
                     document.getElementById('cloudSuccess').classList.add('show');
@@ -1386,9 +1381,7 @@
             document.getElementById('videosWatched').value = 0;
             document.getElementById('videoLength').value = 10;
             document.getElementById('streamingHours').value = 0;
-            document.getElementById('filesUploaded').value = 0;
             document.getElementById('uploadSize').value = 0;
-            document.getElementById('filesDownloaded').value = 0;
             document.getElementById('downloadSize').value = 0;
 
             document.querySelectorAll('.activity-result').forEach(el => el.classList.remove('show'));
@@ -1526,12 +1519,15 @@
             breakdown.forEach(item => {
                 const isRunning = item.status === 'running';
                 const isIdle = item.status === 'idle';
+                const isManual = item.source === 'manual_input';
 
                 let sourceBadge;
                 if (isRunning) {
                     sourceBadge = '<span class="source-badge source-running">Running</span>';
                 } else if (isIdle) {
                     sourceBadge = '<span class="source-badge source-idle">Idle</span>';
+                } else if (isManual) {
+                    sourceBadge = '<span class="source-badge source-manual">Manual</span>';
                 } else {
                     sourceBadge = '<span class="source-badge source-completed">Completed</span>';
                 }

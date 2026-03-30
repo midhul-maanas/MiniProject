@@ -52,7 +52,7 @@ function categorizeWebsite(domain) {
   const categories = {
     video: ['youtube.com', 'netflix.com', 'vimeo.com', 'twitch.tv', 'hulu.com', 'primevideo.com', 'hotstar.com', 'sonyliv.com', 'zee5.com'],
     social: ['facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com', 'reddit.com', 'tiktok.com', 'x.com', 'snapchat.com', 'discord.com', 'web.whatsapp.com'],
-    email: ['gmail.com', 'outlook.com', 'mail.yahoo.com', 'protonmail.com', 'icloud.com'],
+    email: ['gmail.com', 'mail.google.com', 'outlook.com', 'outlook.live.com', 'mail.yahoo.com', 'protonmail.com', 'icloud.com'],
     meeting: ['zoom.us', 'meet.google.com', 'teams.microsoft.com', 'webex.com'],
     cloud: ['drive.google.com', 'dropbox.com', 'onedrive.com', 'icloud.com', 'mega.nz'],
     work: ['docs.google.com', 'office.com', 'notion.so', 'slack.com', 'trello.com', 'asana.com', 'clickup.com', 'miro.com'],
@@ -280,10 +280,43 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
     await persistTabToStorage(tabId);
     await sendToBackend(domain, 0, 'completed', state.totalTime);
 
+    // --- Manual input prompt for email / cloud categories ---
+    const category = categorizeWebsite(domain);
+    if (category === 'email' || category === 'cloud') {
+      promptManualInput(category);
+    }
+
     console.log(`Tab ${tabId} closed -> completed (${domain}, totalTime: ${state.totalTime.toFixed(1)}s, wasActive: ${wasActiveTab})`);
     delete tabStates[tabId];
   }
 });
+
+/**
+ * Open a styled popup window for manual activity input when
+ * an email or cloud tab is closed.
+ */
+async function promptManualInput(category) {
+  try {
+    const baseUrl = chrome.runtime.getURL('manual-input.html');
+    const popupUrl = `${baseUrl}?category=${category}`;
+
+    // Size the popup to fit each form
+    const width = 440;
+    const height = category === 'cloud' ? 540 : 400;
+
+    chrome.windows.create({
+      url: popupUrl,
+      type: 'popup',
+      width,
+      height,
+      focused: true
+    });
+
+    console.log(`Manual input popup opened for category: ${category}`);
+  } catch (error) {
+    console.error('Error opening manual input popup:', error);
+  }
+}
 
 
 chrome.idle.onStateChanged.addListener(async (state) => {

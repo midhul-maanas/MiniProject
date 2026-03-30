@@ -48,6 +48,7 @@ config = {
 }
 
 tracked_processes = {}
+manual_input_counter = {}
 last_activity_time = time.time()
 is_idle = False
 
@@ -582,7 +583,9 @@ def add_manual_activity():
 
     for activity_type, activity_data_item in data.items():
         if activity_type in ['email', 'video', 'streaming', 'cloud']:
-            identifier = f'manual_{activity_type}_input'
+            global manual_input_counter
+            manual_input_counter[activity_type] = manual_input_counter.get(activity_type, 0) + 1
+            identifier = f'MANUAL {activity_type.upper()} INPUT {manual_input_counter[activity_type]}'
 
             activity_data[identifier] = {
                 'total_time': 0,

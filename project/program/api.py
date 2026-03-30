@@ -1,7 +1,7 @@
 from google import genai
 import time
 
-API_KEY = "AIzaSyDRnLm-QLJKrklSKszIuW51UvWCSTSOVyE"
+API_KEY = ""
 
 client = genai.Client(api_key=API_KEY)
 
@@ -32,11 +32,35 @@ Energy consumed: {total_energy} kWh
 Application usage:
 {breakdown}
 
-Provide 3–5 short suggestions to reduce digital carbon emissions.
-Focus on reducing streaming energy, closing unused apps, and avoiding idle usage.
-Only give suggestions ,nothing else.
-"""
+First, convert ONLY the total CO2 value into a simple real-world NON-DIGITAL analogy.
 
+Guidelines for analogy:
+
+* Use meaningful and realistic comparisons only
+* Avoid very small or impractical values (e.g., centimeters of driving)
+* Use driving distance ONLY if the value is large enough to be expressed in meters or kilometers clearly
+* For smaller CO2 values, prefer alternatives like:
+
+  * minutes of LED bulb usage
+  * grams of fuel burned
+  * other simple physical activities
+
+Do NOT use application usage data for the analogy.
+Do NOT use any digital-related comparisons.
+
+Then provide 3–5 short, practical suggestions to reduce digital carbon emissions.
+
+Output format:
+
+* First line: real-world analogy (non-digital, meaningful scale)
+* Then: only bullet-point suggestions
+
+Do not include explanations or extra text.
+
+
+
+"""
+#Focus on reducing streaming energy, closing unused apps, and avoiding idle usage.
     try:
 
         response = client.models.generate_content(

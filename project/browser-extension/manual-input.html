@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity Input</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .popup-card {
+      background: linear-gradient(145deg, #020617, #0f172a);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .popup-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .popup-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .popup-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #86efac 0%, #ffffff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .popup-header p {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #55bc88;
+      box-shadow: 0 0 0 3px rgba(85, 188, 136, 0.15);
+    }
+
+    .input-group input::placeholder {
+      color: #475569;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin: 20px 0;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #55bc88;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #1a6b4a 0%, #84cc16 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(26, 107, 74, 0.3);
+    }
+
+    .btn-submit:hover {
+      box-shadow: 0 6px 24px rgba(26, 107, 74, 0.5);
+    }
+
+    .btn-skip {
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-skip:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e5e7eb;
+    }
+
+    .success-msg {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+
+    .success-msg .check-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .success-msg p {
+      color: #86efac;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="popup-card" id="card">
+    <!-- Email Form -->
+    <div id="email-form" style="display:none;">
+      <div class="popup-header">
+        <!-- <div class="popup-icon">📧</div> -->
+        <h1>Email Activity</h1>
+        <p>Log your email activity before closing</p>
+      </div>
+
+      <div class="input-group">
+        <label>Emails Sent</label>
+        <input type="number" id="email-sent" min="0" value="0" placeholder="0">
+      </div>
+
+      <div class="input-group">
+        <label>Emails Received</label>
+        <input type="number" id="email-received" min="0" value="0" placeholder="0">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-skip" id="btn-skip-email">Skip</button>
+        <button class="btn btn-submit" id="btn-submit-email">Submit</button>
+      </div>
+    </div>
+
+    <!-- Cloud Form -->
+    <div id="cloud-form" style="display:none;">
+      <div class="popup-header">
+        <!-- <div class="popup-icon">☁️</div> -->
+        <h1>Cloud Activity</h1>
+        <p>Log your cloud usage before closing</p>
+      </div>
+
+      <div class="section-label">⬆ Upload</div>
+      <div class="input-group">
+        <label>Total upload size (MB)</label>
+        <input type="number" id="cloud-upload-size" min="0" step="0.1" value="0" placeholder="0">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">⬇ Download</div>
+      <div class="input-group">
+        <label>Total download size (MB)</label>
+        <input type="number" id="cloud-download-size" min="0" step="0.1" value="0" placeholder="0">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-skip" id="btn-skip-cloud">Skip</button>
+        <button class="btn btn-submit" id="btn-submit-cloud">Submit</button>
+      </div>
+    </div>
+
+    <!-- Success message -->
+    <div class="success-msg" id="success-msg">
+      <div class="check-icon">✅</div>
+      <p>Activity logged successfully!</p>
+    </div>
+  </div>
+
+  <script src="manual-input.js"></script>
+</body>
+
+</html>
