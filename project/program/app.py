@@ -619,7 +619,8 @@ def calculate_footprint():
 
         if data.get('source') == 'manual_input':
             co2 = data.get('co2', 0)
-            energy = 0
+            # energy = 0
+            energy = co2 / config['emission_factor']
         else:
             energy = calculate_energy(
                 data['category'],
@@ -654,11 +655,11 @@ def calculate_footprint():
 
     breakdown.sort(key=lambda x: x['co2'], reverse=True)
 
-    if total_co2 < 1:
+    if total_co2 < 0.1:
         status = 'Low'
-    elif total_co2 < 5:
+    elif total_co2 < 0.5:
         status = 'Moderate'
-    elif total_co2 < 10:
+    elif total_co2 < 1:
         status = 'High'
     else:
         status = 'Very High'
