@@ -1,7 +1,7 @@
 from google import genai
 import time
 
-API_KEY = ""
+API_KEY = "AIzaSyALfhS6meAaXjRX2KR41o784HwpmJevEos"
 
 client = genai.Client(api_key=API_KEY)
 
@@ -74,5 +74,8 @@ Do not include explanations or extra text.
         return cached_suggestions
 
     except Exception as e:
-
-        return f"AI suggestion error: {e}"
+        print(f" AI suggestion error: {e}")
+        # Return last cached response instead of showing error to user
+        if cached_suggestions and cached_suggestions != "Analyzing usage...":
+            return cached_suggestions
+        return "AI suggestions temporarily unavailable. Please try again later."
