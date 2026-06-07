@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Footprint Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,10 +15,11 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Outfit', sans-serif;
+            background: #14532d;
             min-height: 100vh;
             padding: 20px;
+            color: #86efac;
         }
 
         .container {
@@ -29,37 +32,77 @@
         }
 
         header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6b4a 0%, #84cc16 100%);
             color: white;
             padding: 40px;
             text-align: center;
         }
 
+        .title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border: none;
+            outline: none;
+        }
+
         header h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #86efac 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         header p {
-            font-size: 16px;
-            opacity: 0.9;
+            font-size: 15px;
+            font-weight: 400;
+            color: #94A3B8;
+            letter-spacing: 0.01em;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
+
         .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            padding: 40px 40px 0 40px;
+            background: transparent;
+        }
+
+        .summary-container {
+            background: #020617;
+            backdrop-filter: blur(18px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
             padding: 40px;
-            background: #f8f9fa;
+
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .summary-card {
-            background: white;
+            background: linear-gradient(145deg, #020617, #0f172a) !important;
             padding: 30px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s;
+            color: #e5e7eb;
         }
 
         .summary-card:hover {
@@ -77,7 +120,7 @@
         .summary-card .value {
             font-size: 42px;
             font-weight: bold;
-            color: #667eea;
+            color: #55bc88;
             margin-bottom: 10px;
         }
 
@@ -94,21 +137,36 @@
             font-size: 18px;
         }
 
-        .status-low { background: #d4edda; color: #155724; }
-        .status-moderate { background: #fff3cd; color: #856404; }
-        .status-high { background: #f8d7da; color: #721c24; }
-        .status-very-high { background: #f5c6cb; color: #491217; }
+        .status-low {
+            background: #d4edda;
+            color: #155724;
+        }
 
-        /* Manual Input Section */
+        .status-moderate {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-very-high {
+            background: #f5c6cb;
+            color: #491217;
+        }
+
+
         .manual-input-section {
             padding: 40px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-top: 3px solid #667eea;
+            background: transparent;
+            border-top: none;
         }
 
         .manual-input-section h2 {
             font-size: 28px;
-            color: #333;
+            color: #ffffff;
             margin-bottom: 10px;
         }
 
@@ -145,8 +203,8 @@
         }
 
         .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: #55bc88;
+            border-bottom-color: #55bc88;
             background: white;
             font-weight: bold;
         }
@@ -165,8 +223,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .input-grid {
@@ -200,7 +265,7 @@
         .input-group input[type="number"]:focus,
         .input-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #55bc88;
         }
 
         .checkbox-group {
@@ -233,7 +298,7 @@
 
         .btn-save {
             padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6b4a 0%, #84cc16 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -247,7 +312,7 @@
 
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(26, 107, 74, 0.4);
         }
 
         .btn-save:active {
@@ -257,16 +322,23 @@
         .activity-result {
             margin-top: 20px;
             padding: 20px;
-            background: linear-gradient(135deg, #e7f3ff 0%, #f0e7ff 100%);
+            background: linear-gradient(135deg, #e0f5ee 0%, #d5f0e0 100%);
             border-radius: 10px;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #84cc16;
             display: none;
             animation: slideIn 0.3s;
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .activity-result.show {
@@ -281,16 +353,26 @@
 
         .co2-value {
             font-weight: bold;
-            color: #667eea;
+            color: #55bc88;
             font-size: 24px;
+        }
+
+        .manual-container {
+            background: #020617;
+            backdrop-filter: blur(18px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+            padding: 40px;
+
         }
 
         .manual-summary {
             margin-top: 30px;
             padding: 25px;
-            background: white;
+            background: #0f172a;
             border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             display: none;
         }
 
@@ -301,7 +383,7 @@
         .manual-summary h3 {
             font-size: 20px;
             margin-bottom: 20px;
-            color: #333;
+            color: #e5e7eb;
         }
 
         .manual-breakdown {
@@ -333,13 +415,13 @@
 
         .manual-item-co2 {
             font-weight: bold;
-            color: #667eea;
+            color: #55bc88;
             font-size: 18px;
         }
 
         .manual-total {
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6b4a 0%, #84cc16 100%);
             color: white;
             border-radius: 10px;
             text-align: center;
@@ -371,7 +453,7 @@
             background: #c82333;
         }
 
-        /* Charts Section */
+
         .charts {
             padding: 40px;
         }
@@ -390,6 +472,17 @@
             font-size: 24px;
         }
 
+        .pie-box {
+            width: 520px;
+            height: 520px;
+            margin: 0 auto;
+        }
+
+        .pie-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -400,20 +493,38 @@
         .data-table td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #020617;
         }
 
         .data-table th {
-            background: #f8f9fa;
+            background: #020617;
             font-weight: bold;
-            color: #666;
+            color: #666666;
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
+        .data-table tr {
+            background: #0f172a !important;
+        }
+
         .data-table tr:hover {
-            background: #f8f9fa;
+            background: #020617;
+        }
+
+        .data-table tr.row-running {
+            background: rgb(232, 247, 16) !important;
+            border-left: 3px solid #c8ae46;
+        }
+
+        .data-table tr.row-running td {
+            color: #000000 !important;
+            font-weight: 600;
+        }
+
+        .data-table tr.row-running:hover {
+            background: rgba(250, 204, 21, 0.45) !important;
         }
 
         .category-badge {
@@ -425,15 +536,80 @@
             text-transform: uppercase;
         }
 
-        .category-video { background: #ffe5e5; color: #c41e3a; }
-        .category-social { background: #e5f5ff; color: #0066cc; }
-        .category-email { background: #e5ffe5; color: #00cc44; }
-        .category-meeting { background: #fff5e5; color: #ff9900; }
-        .category-cloud { background: #f5e5ff; color: #9933cc; }
-        .category-work { background: #e5f5e5; color: #339966; }
-        .category-browsing { background: #f0f0f0; color: #666; }
-        .category-other { background: #f8f9fa; color: #999; }
-        .category-streaming { background: #ffe5f5; color: #cc0066; }
+        .category-video {
+            background: #ffe5e5;
+            color: #c41e3a;
+        }
+
+        .category-social {
+            background: #e5f5ff;
+            color: #0066cc;
+        }
+
+        .category-email {
+            background: #e5ffe5;
+            color: #00cc44;
+        }
+
+        .category-meeting {
+            background: #fff5e5;
+            color: #ff9900;
+        }
+
+        .category-cloud {
+            background: #f5e5ff;
+            color: #9933cc;
+        }
+
+        .category-work {
+            background: #e5f5e5;
+            color: #339966;
+        }
+
+        .category-browsing {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .category-streaming {
+            background: #ffe5f5;
+            color: #cc0066;
+        }
+
+        .category-design {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .category-ai {
+            background: #ecfeff;
+            color: #0e7490;
+        }
+
+        .category-productivity {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .category-shopping {
+            background: #fff7ed;
+            color: #9a3412;
+        }
+
+        .category-sports {
+            background: #ecfccb;
+            color: #365314;
+        }
+
+        .category-news {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .category-education {
+            background: #e0f2f1;
+            color: #115e59;
+        }
 
         .source-badge {
             display: inline-block;
@@ -465,8 +641,9 @@
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a6b4a 0%, #99c558 100%);
             color: white;
+            font-family: 'Outfit', sans-serif;
             border: none;
             padding: 15px 30px;
             font-size: 16px;
@@ -478,19 +655,19 @@
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(26, 107, 74, 0.4);
         }
 
         #loading {
             text-align: center;
             padding: 60px;
-            color: #667eea;
+            color: #74d496;
             font-size: 18px;
         }
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #74d496;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -499,8 +676,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .success-message {
@@ -530,11 +712,14 @@
 }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>🌍 Digital Carbon Footprint Dashboard</h1>
-            <p>Track and manage your environmental impact from digital activities</p>
+            <div class="title-bar">
+                <img src="/static/logo.png.png" class="logo">
+                <h1 class="main-title">DIGITAL CARBON FOOTPRINT TRACKER</h1>
+            </div>
         </header>
 
         <div id="loading">
@@ -543,202 +728,48 @@
         </div>
 
         <div id="content" style="display: none;">
-            <!-- Summary Cards -->
+
+
             <div class="summary">
-                <div class="summary-card">
-                    <h2>Total CO₂ Emissions</h2>
-                    <div class="value" id="totalCO2">0.00</div>
-                    <div class="unit">kg CO₂</div>
-                </div>
-                <div class="summary-card">
-                    <h2>Energy Consumed</h2>
-                    <div class="value" id="totalEnergy">0.00</div>
-                    <div class="unit">kWh</div>
-                </div>
-                <div class="summary-card">
-                    <h2>Carbon Status</h2>
-                    <div class="value">
-                        <span class="status-badge" id="statusBadge">Low</span>
+                <div class="summary-container">
+                    <div class="summary-card">
+                        <h2>Total CO2 Emissions</h2>
+                        <div class="value" id="totalCO2">0.00</div>
+                        <div class="unit">kg CO2</div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Manual Input Section -->
-            <div class="manual-input-section">
-                <h2>📝 Manual Activity Input</h2>
-                <p class="subtitle">Add activities that aren't automatically tracked for more accurate CO₂ calculations</p>
-                
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('email')">📧 Email</button>
-                    <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
-                    <button class="tab-btn" onclick="switchTab('streaming')">📺 Streaming</button>
-                    <button class="tab-btn" onclick="switchTab('cloud')">☁️ Cloud Storage</button>
-                </div>
-
-                <!-- Email Tab -->
-                <div class="tab-content active" id="email-tab">
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label>Emails sent today:</label>
-                            <input type="number" id="emailsSent" min="0" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Emails received/read today:</label>
-                            <input type="number" id="emailsRead" min="0" placeholder="0" value="0">
+                    <div class="summary-card">
+                        <h2>Energy Consumed</h2>
+                        <div class="value" id="totalEnergy">0.00</div>
+                        <div class="unit">kWh</div>
+                    </div>
+                    <div class="summary-card">
+                        <h2>Carbon Status</h2>
+                        <div class="value">
+                            <span class="status-badge" id="statusBadge">Low</span>
                         </div>
                     </div>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="emailHasAttachments">
-                        <label for="emailHasAttachments">Most emails had attachments (>1MB)</label>
-                    </div>
-                    
-                    <button class="btn-save" onclick="saveActivity('email')">💾 Save Email Data</button>
-                    
-                    <div class="activity-result" id="emailResult">
-                        <p>✅ Email data saved! Estimated CO₂: <span class="co2-value" id="emailCO2">0.00</span> kg</p>
-                    </div>
-                    
-                    <div class="success-message" id="emailSuccess">
-                        Data saved successfully and added to your carbon footprint!
-                    </div>
-                </div>
-
-                <!-- Video Tab -->
-                <div class="tab-content" id="video-tab">
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label>Videos watched today:</label>
-                            <input type="number" id="videosWatched" min="0" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Average video length (minutes):</label>
-                            <input type="number" id="videoLength" min="1" placeholder="10" value="10">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Video quality:</label>
-                            <select id="videoQuality">
-                                <option value="sd">SD (480p)</option>
-                                <option value="hd" selected>HD (720p/1080p)</option>
-                                <option value="4k">4K (2160p)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-save" onclick="saveActivity('video')">💾 Save Video Data</button>
-                    
-                    <div class="activity-result" id="videoResult">
-                        <p>✅ Video data saved! Estimated CO₂: <span class="co2-value" id="videoCO2">0.00</span> kg</p>
-                    </div>
-                    
-                    <div class="success-message" id="videoSuccess">
-                        Data saved successfully and added to your carbon footprint!
-                    </div>
-                </div>
-
-                <!-- Streaming Tab -->
-                <div class="tab-content" id="streaming-tab">
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label>Hours of streaming today:</label>
-                            <input type="number" id="streamingHours" min="0" step="0.5" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Streaming type:</label>
-                            <select id="streamingType">
-                                <option value="music">Music (Spotify, Apple Music)</option>
-                                <option value="video" selected>Video (Netflix, YouTube)</option>
-                                <option value="gaming">Gaming (Twitch, Cloud Gaming)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Streaming quality:</label>
-                            <select id="streamingQuality">
-                                <option value="low">Low Quality</option>
-                                <option value="medium" selected>Medium Quality</option>
-                                <option value="high">High Quality</option>
-                                <option value="4k">4K/Ultra HD</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-save" onclick="saveActivity('streaming')">💾 Save Streaming Data</button>
-                    
-                    <div class="activity-result" id="streamingResult">
-                        <p>✅ Streaming data saved! Estimated CO₂: <span class="co2-value" id="streamingCO2">0.00</span> kg</p>
-                    </div>
-                    
-                    <div class="success-message" id="streamingSuccess">
-                        Data saved successfully and added to your carbon footprint!
-                    </div>
-                </div>
-
-                <!-- Cloud Storage Tab -->
-                <div class="tab-content" id="cloud-tab">
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label>Files uploaded today:</label>
-                            <input type="number" id="filesUploaded" min="0" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Total upload size (MB):</label>
-                            <input type="number" id="uploadSize" min="0" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Files downloaded today:</label>
-                            <input type="number" id="filesDownloaded" min="0" placeholder="0" value="0">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Total download size (MB):</label>
-                            <input type="number" id="downloadSize" min="0" placeholder="0" value="0">
-                        </div>
-                    </div>
-                    
-                    <button class="btn-save" onclick="saveActivity('cloud')">💾 Save Cloud Data</button>
-                    
-                    <div class="activity-result" id="cloudResult">
-                        <p>✅ Cloud data saved! Estimated CO₂: <span class="co2-value" id="cloudCO2">0.00</span> kg</p>
-                    </div>
-                    
-                    <div class="success-message" id="cloudSuccess">
-                        Data saved successfully and added to your carbon footprint!
-                    </div>
-                </div>
-
-                <!-- Manual Input Summary -->
-                <div class="manual-summary" id="manualSummary">
-                    <h3>📊 Manual Input Summary</h3>
-                    <div class="manual-breakdown" id="manualBreakdown"></div>
-                    <div class="manual-total">
-                        <strong>Total Manual Input CO₂:</strong>
-                        <span id="manualTotalCO2">0.00 kg</span>
-                    </div>
-                    <button class="btn-reset-manual" onclick="resetManualData()">🗑️ Reset Manual Data</button>
                 </div>
             </div>
 
-            <!-- Charts Section -->
+
+
+
+
             <div class="charts">
                 <div class="chart-container">
-                    <h2>📊 CO₂ Emissions by Category</h2>
-                    <canvas id="categoryChart"></canvas>
+                    <h2>CO2 Emissions by Category</h2>
+                    <div class="pie-box">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
                 </div>
-
                 <div class="chart-container">
-                    <h2>📈 Top Activities</h2>
-                    <canvas id="activityChart"></canvas>
+                    <h2>Top Activities</h2>
+                    <div class="chart-box">
+                        <canvas id="activityChart"></canvas>
+                    </div>
                 </div>
-
                 <div class="chart-container">
-                    <h2>📋 Activity Details</h2>
+                    <h2>Activity Details</h2>
                     <table class="data-table" id="activityTable">
                         <thead>
                             <tr>
@@ -746,8 +777,8 @@
                                 <th>Category</th>
                                 <th>Time</th>
                                 <th>Energy (kWh)</th>
-                                <th>CO₂ (kg)</th>
-                                <th>Source</th>
+                                <th>CO2 (kg)</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="activityTableBody"></tbody>
@@ -755,168 +786,139 @@
                 </div>
             </div>
 
-            <!-- Actions -->
+
+            <div class="ai-insights-section" id="aiInsightsSection">
+                <div class="ai-insights-container">
+                    <div class="ai-insights-header">
+                        <h2>AI Insights</h2>
+                    </div>
+                    <div class="ai-insights-body">
+                        <div class="ai-insights-predictions">
+                            <h3>Predictions</h3>
+                            <div class="ai-insights-pred-cards-row">
+                                <div class="ai-insights-pred-card">
+                                    <span class="ai-insights-pred-label">Predicted CO₂ — Next Hour</span>
+                                    <span class="ai-insights-pred-value" id="aiPredNextHour">
+                                        <span class="ai-insights-loading"><span
+                                                class="ai-dot-pulse">Loading…</span></span>
+                                    </span>
+                                    <span class="ai-insights-pred-unit">kg CO₂</span>
+                                </div>
+                                <div class="ai-insights-pred-card">
+                                    <span class="ai-insights-pred-label">Predicted Total CO₂ — Today</span>
+                                    <span class="ai-insights-pred-value" id="aiPredToday">
+                                        <span class="ai-insights-loading"><span
+                                                class="ai-dot-pulse">Loading…</span></span>
+                                    </span>
+                                    <span class="ai-insights-pred-unit">kg CO₂</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-insights-suggestions">
+                            <h3>AI Suggestions</h3>
+                            <ul class="ai-insights-sug-list" id="aiSuggestionsList">
+                                <li class="ai-insights-loading"><span class="ai-dot-pulse">Generating
+                                        suggestions…</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="actions">
-                <button onclick="refreshData()">🔄 Refresh Data</button>
-                <button onclick="exportData()">📊 Export as JSON</button>
-                <button onclick="resetAllData()">🗑️ Reset All Data</button>
+                <button onclick="refreshData()">Refresh Data</button>
+                <button onclick="resetAllData()">Reset All Data</button>
             </div>
         </div>
     </div>
 
     <script>
         let categoryChart, activityChart;
-        
-        // CO₂ emission factors
+
         const CO2_FACTORS = {
-            email: {
-                text: 0.004,
-                attachment: 0.050
-            },
-            video: {
-                sd: 0.055,
-                hd: 0.220,
-                '4k': 0.440
-            },
+            email: { text: 0.004, attachment: 0.050 },
+            video: { sd: 0.055, hd: 0.220, '4k': 0.440 },
             streaming: {
-                music: {
-                    low: 0.010,
-                    medium: 0.020,
-                    high: 0.040
-                },
-                video: {
-                    low: 0.100,
-                    medium: 0.300,
-                    high: 0.600,
-                    '4k': 1.200
-                },
-                gaming: {
-                    low: 0.200,
-                    medium: 0.400,
-                    high: 0.800,
-                    '4k': 1.600
-                }
+                music: { low: 0.010, medium: 0.020, high: 0.040 },
+                video: { low: 0.100, medium: 0.300, high: 0.600, '4k': 1.200 },
+                gaming: { low: 0.200, medium: 0.400, high: 0.800, '4k': 1.600 }
             },
-            cloud: {
-                upload: 0.00011,
-                download: 0.00007
-            }
+            cloud: { upload: 0.00003, download: 0.00003 }
         };
 
-        // Tab switching
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
             event.target.classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
 
-        // Save manual activity
         async function saveActivity(activityType) {
             let co2 = 0;
             let activityData = {};
 
-            switch(activityType) {
-                case 'email':
+            switch (activityType) {
+                case 'email': {
                     const emailsSent = parseInt(document.getElementById('emailsSent').value) || 0;
                     const emailsRead = parseInt(document.getElementById('emailsRead').value) || 0;
                     const hasAttachments = document.getElementById('emailHasAttachments').checked;
-                    
                     const emailFactor = hasAttachments ? CO2_FACTORS.email.attachment : CO2_FACTORS.email.text;
                     co2 = (emailsSent + emailsRead) * emailFactor;
-                    
-                    activityData = {
-                        sent: emailsSent,
-                        read: emailsRead,
-                        hasAttachments: hasAttachments,
-                        co2: co2
-                    };
-                    
+                    activityData = { sent: emailsSent, read: emailsRead, hasAttachments, co2 };
                     document.getElementById('emailCO2').textContent = co2.toFixed(3);
                     document.getElementById('emailResult').classList.add('show');
                     document.getElementById('emailSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('emailSuccess').classList.remove('show'), 3000);
                     break;
-                    
-                case 'video':
+                }
+                case 'video': {
                     const videosWatched = parseInt(document.getElementById('videosWatched').value) || 0;
                     const videoLength = parseInt(document.getElementById('videoLength').value) || 0;
                     const videoQuality = document.getElementById('videoQuality').value;
-                    
                     const totalHours = (videosWatched * videoLength) / 60;
                     co2 = totalHours * CO2_FACTORS.video[videoQuality];
-                    
-                    activityData = {
-                        count: videosWatched,
-                        length: videoLength,
-                        quality: videoQuality,
-                        co2: co2
-                    };
-                    
+                    activityData = { count: videosWatched, length: videoLength, quality: videoQuality, co2 };
                     document.getElementById('videoCO2').textContent = co2.toFixed(3);
                     document.getElementById('videoResult').classList.add('show');
                     document.getElementById('videoSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('videoSuccess').classList.remove('show'), 3000);
                     break;
-                    
-                case 'streaming':
+                }
+                case 'streaming': {
                     const streamingHours = parseFloat(document.getElementById('streamingHours').value) || 0;
                     const streamingType = document.getElementById('streamingType').value;
                     const streamingQuality = document.getElementById('streamingQuality').value;
-                    
                     co2 = streamingHours * CO2_FACTORS.streaming[streamingType][streamingQuality];
-                    
-                    activityData = {
-                        hours: streamingHours,
-                        type: streamingType,
-                        quality: streamingQuality,
-                        co2: co2
-                    };
-                    
+                    activityData = { hours: streamingHours, type: streamingType, quality: streamingQuality, co2 };
                     document.getElementById('streamingCO2').textContent = co2.toFixed(3);
                     document.getElementById('streamingResult').classList.add('show');
                     document.getElementById('streamingSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('streamingSuccess').classList.remove('show'), 3000);
                     break;
-                    
-                case 'cloud':
-                    const filesUploaded = parseInt(document.getElementById('filesUploaded').value) || 0;
+                }
+                case 'cloud': {
                     const uploadSize = parseFloat(document.getElementById('uploadSize').value) || 0;
-                    const filesDownloaded = parseInt(document.getElementById('filesDownloaded').value) || 0;
                     const downloadSize = parseFloat(document.getElementById('downloadSize').value) || 0;
-                    
-                    const uploadCO2 = uploadSize * CO2_FACTORS.cloud.upload;
-                    const downloadCO2 = downloadSize * CO2_FACTORS.cloud.download;
-                    co2 = uploadCO2 + downloadCO2;
-                    
-                    activityData = {
-                        filesUploaded: filesUploaded,
-                        uploadSize: uploadSize,
-                        filesDownloaded: filesDownloaded,
-                        downloadSize: downloadSize,
-                        co2: co2
-                    };
-                    
+                    co2 = (uploadSize * CO2_FACTORS.cloud.upload) + (downloadSize * CO2_FACTORS.cloud.download);
+                    activityData = { uploadSize, downloadSize, co2 };
                     document.getElementById('cloudCO2').textContent = co2.toFixed(3);
                     document.getElementById('cloudResult').classList.add('show');
                     document.getElementById('cloudSuccess').classList.add('show');
                     setTimeout(() => document.getElementById('cloudSuccess').classList.remove('show'), 3000);
                     break;
+                }
             }
 
             const manualData = {};
             manualData[activityType] = activityData;
-            
+
             try {
                 await fetch('http://localhost:5000/api/manual-activity', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(manualData)
                 });
-                
                 updateManualSummary();
                 setTimeout(() => refreshData(), 1000);
             } catch (error) {
@@ -930,9 +932,7 @@
         }
 
         async function resetManualData() {
-            if (!confirm('Are you sure you want to reset all manual input data?')) {
-                return;
-            }
+            if (!confirm('Are you sure you want to reset all manual input data?')) return;
 
             document.getElementById('emailsSent').value = 0;
             document.getElementById('emailsRead').value = 0;
@@ -940,19 +940,14 @@
             document.getElementById('videosWatched').value = 0;
             document.getElementById('videoLength').value = 10;
             document.getElementById('streamingHours').value = 0;
-            document.getElementById('filesUploaded').value = 0;
             document.getElementById('uploadSize').value = 0;
-            document.getElementById('filesDownloaded').value = 0;
             document.getElementById('downloadSize').value = 0;
 
             document.querySelectorAll('.activity-result').forEach(el => el.classList.remove('show'));
             document.getElementById('manualSummary').classList.remove('show');
 
             try {
-                await fetch('http://localhost:5000/api/reset-manual', {
-                    method: 'POST'
-                });
-                
+                await fetch('http://localhost:5000/api/reset-manual', { method: 'POST' });
                 refreshData();
             } catch (error) {
                 console.error('Failed to reset manual data:', error);
@@ -969,7 +964,7 @@
 
                 document.getElementById('totalCO2').textContent = data.total_co2.toFixed(2);
                 document.getElementById('totalEnergy').textContent = data.total_energy.toFixed(3);
-                
+
                 const statusBadge = document.getElementById('statusBadge');
                 statusBadge.textContent = data.status;
                 statusBadge.className = 'status-badge status-' + data.status.toLowerCase().replace(' ', '-');
@@ -981,13 +976,13 @@
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                document.getElementById('loading').innerHTML = '<p>❌ Error loading data. Please ensure the backend is running at http://localhost:5000</p>';
+                document.getElementById('loading').innerHTML =
+                    '<p>Error loading data. Please ensure the backend is running at http://localhost:5000</p>';
             }
         }
 
         function updateManualSummaryDisplay(breakdown) {
             const manualActivities = breakdown.filter(item => item.source === 'manual_input');
-            
             if (manualActivities.length === 0) {
                 document.getElementById('manualSummary').classList.remove('show');
                 return;
@@ -997,19 +992,12 @@
             let total = 0;
 
             manualActivities.forEach(item => {
-                const icon = {
-                    'email': '📧',
-                    'video': '🎥',
-                    'streaming': '📺',
-                    'cloud': '☁️'
-                }[item.category] || '📝';
-
+                const icon = { email: '', video: '', streaming: '', cloud: '' }[item.category] || '';
                 html += `
                     <div class="manual-item">
                         <span class="manual-item-name">${icon} ${item.name.replace('manual_', '').replace('_input', '')}</span>
                         <span class="manual-item-co2">${item.co2.toFixed(3)} kg</span>
-                    </div>
-                `;
+                    </div>`;
                 total += item.co2;
             });
 
@@ -1021,17 +1009,12 @@
         function createCategoryChart(breakdown) {
             const categoryData = {};
             breakdown.forEach(item => {
-                if (!categoryData[item.category]) {
-                    categoryData[item.category] = 0;
-                }
+                if (!categoryData[item.category]) categoryData[item.category] = 0;
                 categoryData[item.category] += item.co2;
             });
 
             const ctx = document.getElementById('categoryChart').getContext('2d');
-            
-            if (categoryChart) {
-                categoryChart.destroy();
-            }
+            if (categoryChart) categoryChart.destroy();
 
             categoryChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -1039,23 +1022,22 @@
                     labels: Object.keys(categoryData),
                     datasets: [{
                         data: Object.values(categoryData),
-                        backgroundColor: [
-                            '#FF6384',
-                            '#36A2EB',
-                            '#FFCE56',
-                            '#4BC0C0',
-                            '#9966FF',
-                            '#FF9F40',
-                            '#C9CBCF',
-                            '#FF66B2'
-                        ]
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF66B2']
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom'
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = ((context.raw / total) * 100).toFixed(1);
+                                    return context.label + ': ' + pct + '%';
+                                }
+                            }
                         }
                     }
                 }
@@ -1064,35 +1046,27 @@
 
         function createActivityChart(breakdown) {
             const top10 = breakdown.slice(0, 10);
-
             const ctx = document.getElementById('activityChart').getContext('2d');
-            
-            if (activityChart) {
-                activityChart.destroy();
-            }
+            if (activityChart) activityChart.destroy();
 
             activityChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: top10.map(item => item.name),
                     datasets: [{
-                        label: 'CO₂ Emissions (kg)',
+                        label: 'CO2 Emissions (kg)',
                         data: top10.map(item => item.co2),
-                        backgroundColor: '#667eea'
+                        backgroundColor: '#A8E063'
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                        x: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,0.3)' } },
+                        y: { beginAtZero: true, ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,0.3)' } }
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
@@ -1102,6 +1076,8 @@
             tbody.innerHTML = '';
 
             breakdown.forEach(item => {
+                const isRunning = item.status === 'running';
+                const isIdle = item.status === 'idle';
                 const isManual = item.source === 'manual_input';
                 const isRunning = item.status === 'running';
                 
@@ -1137,11 +1113,7 @@
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
-            
-            if (hours > 0) {
-                return `${hours}h ${minutes}m`;
-            }
-            return `${minutes}m`;
+            return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
         }
 
         function refreshData() {
@@ -1152,10 +1124,7 @@
         }
 
         async function resetAllData() {
-            if (!confirm('Are you sure you want to reset ALL tracking data? This includes both automatic and manual data and cannot be undone.')) {
-                return;
-            }
-            
+            if (!confirm('Are you sure you want to reset ALL tracking data? This cannot be undone.')) return;
             await fetch('http://localhost:5000/api/reset', { method: 'POST' });
             await resetManualData();
             refreshData();
@@ -1163,11 +1132,10 @@
 
         function exportData() {
             fetch('http://localhost:5000/api/calculate')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    const dataStr = JSON.stringify(data, null, 2);
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(dataBlob);
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
                     link.download = `carbon-footprint-${new Date().toISOString().split('T')[0]}.json`;
@@ -1178,10 +1146,114 @@
         loadDashboard();
 
         setInterval(() => {
-            if (!document.activeElement.matches('input, select')) {
-                loadDashboard();
-            }
+            if (!document.activeElement.matches('input, select')) loadDashboard();
         }, 30000);
     </script>
+
+    <script>
+        function showEmailModal() {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
+                    display:flex;align-items:center;justify-content:center;z-index:9999;">
+                    <div style="background:#020617;padding:30px;border-radius:12px;width:400px;box-shadow:0 0 40px black;">
+                        <h2 style="margin-bottom:15px">Email Activity Detected</h2>
+                        <p>How many emails did you send/read?</p>
+                        <input id="popupEmailCount" type="number"
+                            style="width:100%;padding:10px;margin-top:10px;background:#0f172a;color:white;border:1px solid #334155">
+                        <button onclick="submitEmailPopup()"
+                            style="margin-top:15px;width:100%;padding:12px;background:#2563eb;color:white;border:none;border-radius:6px">
+                            Submit
+                        </button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            window.emailModal = modal;
+        }
+
+        function submitEmailPopup() {
+            const count = parseInt(document.getElementById('popupEmailCount').value) || 0;
+            fetch('/api/manual-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: { sent: count, read: 0, co2: count * 0.004 } })
+            });
+            window.emailModal.remove();
+            refreshData();
+        }
+
+        setInterval(async () => {
+            try {
+                const r = await fetch('/api/email-popup');
+                const d = await r.json();
+                if (d.popup) showEmailModal();
+            } catch { }
+        }, 5000);
+    </script>
+
+    <script>
+        (function () {
+            const REFRESH_MS = 12000;
+
+            async function fetchPredictions() {
+                try {
+                    const [nextHourRes, todayRes] = await Promise.all([
+                        fetch('/api/predict-next-hour'),
+                        fetch('/api/predict-today')
+                    ]);
+                    const nextHourData = await nextHourRes.json();
+                    const todayData = await todayRes.json();
+
+                    document.getElementById('aiPredNextHour').textContent =
+                        Number(nextHourData.predicted_next_hour_co2 ?? 0).toFixed(4);
+                    document.getElementById('aiPredToday').textContent =
+                        Number(todayData.predicted_today_total_co2 ?? 0).toFixed(4);
+                } catch (err) {
+                    console.error('AI Insights – prediction fetch error:', err);
+                    document.getElementById('aiPredNextHour').textContent = '—';
+                    document.getElementById('aiPredToday').textContent = '—';
+                }
+            }
+
+            async function fetchSuggestions() {
+                try {
+                    const res = await fetch('/api/ai-suggestions');
+                    const data = await res.json();
+                    const list = document.getElementById('aiSuggestionsList');
+
+                    let suggestions = data.suggestions || '';
+                    if (typeof suggestions === 'string') {
+                        suggestions = suggestions
+                            .split('\n')
+                            .map(s => s.replace(/^[\s\-\*•\d\.]+/, '').trim())
+                            .filter(s => s.length > 0);
+                    }
+
+                    if (!suggestions || suggestions.length === 0) {
+                        list.innerHTML = '<li class="ai-insights-sug-item"><span>No suggestions right now — your carbon footprint looks good!</span></li>';
+                        return;
+                    }
+
+                    list.innerHTML = suggestions
+                        .map(s => `<li class="ai-insights-sug-item"><span>${s}</span></li>`)
+                        .join('');
+                } catch (err) {
+                    console.error('AI Insights – suggestions fetch error:', err);
+                    document.getElementById('aiSuggestionsList').innerHTML =
+                        '<li class="ai-insights-sug-item"><span>⚠️ Unable to load suggestions.</span></li>';
+                }
+            }
+
+            function refreshAIInsights() {
+                fetchPredictions();
+                fetchSuggestions();
+            }
+
+            refreshAIInsights();
+            setInterval(refreshAIInsights, REFRESH_MS);
+        })();
+    </script>
+
 </body>
+
 </html>

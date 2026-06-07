@@ -1,0 +1,1 @@
+df3["Category"] = df3["Category"].replace(["Photo & video","Entertainment","Music"],"Streaming")

@@ -3,37 +3,48 @@ from flask_cors import CORS
 import psutil
 import time
 import threading
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import defaultdict
+import win32gui
+import win32process
+import csv
+from datetime import datetime
 import os
+import joblib
+from api import generate_ai_suggestions
 
 app = Flask(__name__)
 CORS(app)
 
-# Global data storage
-activity_data = defaultdict(lambda: {
-    'total_time': 0,
-    'cpu_usage': 0,
-    'category': 'unknown',
-    'last_update': None,
-    'source': None
-})
+
+
+
+
+activity_data = {}
+
+
+IDLE_THRESHOLD = 600
+REFRESH = 5
+
+
+
 
 config = {
-    'emission_factor': 0.475,  # kg CO2 per kWh
+    'emission_factor': 0.475,
     'tracking_enabled': True,
-    'idle_threshold': 300  # 5 minutes
+    'idle_threshold': IDLE_THRESHOLD,
+    'realtime_update_interval': REFRESH,
+    'track_all_running': True
 }
 
-# Process tracking
 tracked_processes = {}
+manual_input_counter = {}
 last_activity_time = time.time()
 is_idle = False
 
-# System processes to EXCLUDE (comprehensive list)
+
+
 SYSTEM_PROCESSES_BLACKLIST = {
-    # Windows System Processes
     'system', 'system idle process', 'smss.exe', 'csrss.exe', 'wininit.exe',
     'winlogon.exe', 'services.exe', 'lsass.exe', 'lsaiso.exe', 'svchost.exe',
     'taskhost.exe', 'taskhostw.exe', 'dwm.exe', 'explorer.exe', 'sihost.exe',
@@ -44,363 +55,591 @@ SYSTEM_PROCESSES_BLACKLIST = {
     'wlanext.exe', 'msmpeng.exe', 'nissrv.exe', 'securityhealthservice.exe',
     'sgrmbroker.exe', 'startmenuexperiencehost.exe', 'shellexperiencehost.exe',
     'textinputhost.exe', 'lockapp.exe', 'applicationframehost.exe',
-    'windowsinternal.composableshell.experiences.textinput.inputapp.exe',
     'systemsettings.exe', 'settingssynchost.exe', 'useroobebroker.exe',
-    
-    # Windows Defender & Security
     'msmpeng.exe', 'nissrv.exe', 'securityhealthsystray.exe',
     'securityhealthservice.exe', 'windefend.exe', 'mpcmdrun.exe',
-    
-    # Windows Update & Management
     'wuauclt.exe', 'trustedinstaller.exe', 'tiworker.exe', 'usoclient.exe',
     'musnotification.exe', 'musnotificationux.exe',
-    
-    # Network & Connection
     'dashost.exe', 'netsh.exe', 'ping.exe', 'ipconfig.exe',
-    
-    # Driver & Hardware
     'nvdisplay.container.exe', 'nvcontainer.exe', 'nvprofileupdater.exe',
     'atieclxx.exe', 'atiesrxx.exe', 'igfxem.exe', 'igfxpers.exe',
     'igfxtray.exe', 'hkcmd.exe', 'igfxsrvc.exe',
-    
-    # MacOS System Processes
     'kernel_task', 'launchd', 'loginwindow', 'windowserver', 'dock',
     'finder', 'systemuiserver', 'coreaudiod', 'corespotlightd', 'mds',
     'mds_stores', 'mdworker', 'trustd', 'securityd', 'parentalcontrolsd',
     'softwareupdated', 'notifyd', 'distnoted', 'cfprefsd', 'useractivityd',
     'bird', 'cloudd', 'apsd', 'rapportd', 'airplayuiagent',
-    
-    # Linux System Processes
     'systemd', 'init', 'kthreadd', 'ksoftirqd', 'kworker', 'kswapd',
     'migration', 'watchdog', 'cpuhp', 'kdevtmpfs', 'netns', 'khungtaskd',
     'oom_reaper', 'writeback', 'kcompactd', 'kblockd', 'kintegrityd',
-    'kworker', 'irq', 'acpi', 'thermal', 'scsi', 'ata_sff', 'md',
-    'devfreq_wq', 'watchdogd', 'kauditd', 'khugepaged', 'crypto',
-    
-    # Generic System/Background
     'idle', 'system32', 'syswow64', 'backgroundtaskhost.exe',
-    'taskmgr.exe', 'perfmon.exe', 'resmon.exe', 'mmc.exe',
+    'taskmgr.exe', 'perfmon.exe', 'resmon.exe', 'mmc.exe','rtkuwp.exe',
+    'aqauserps.exe'
 }
 
-# Additional filtering patterns
 SYSTEM_PROCESS_PATTERNS = [
     'windows', 'microsoft', 'update', 'defender', 'system',
     'svc', 'host', 'service', 'driver', 'helper', 'agent',
-    'daemon', 'background', 'runtime', 'broker', 'protocol'
+    'daemon', 'background', 'runtime', 'broker', 'protocol',
+    'cmd','overlay','nvidia','overlay','radeon','acer','setup',
+    'software'
 ]
 
+model = joblib.load("co2_model.pkl")
+
+def predict_co2(duration, cpu_usage, idle_time, hour):
+    prediction = model.predict([[
+        duration,
+        cpu_usage,
+        idle_time,
+        hour
+    ]])
+    return float(prediction[0])
+
+
+def log_usage_data(app_name, category, duration, cpu, idle, co2):
+
+    file_exists = os.path.isfile("usage_data.csv")
+
+    with open("usage_data.csv", "a", newline="") as f:
+        writer = csv.writer(f)
+
+        if not file_exists:
+            writer.writerow([
+                "timestamp",
+                "app_name",
+                "category",
+                "duration",
+                "cpu_usage",
+                "idle_time",
+                "co2"
+            ])
+
+        writer.writerow([
+            datetime.now(),
+            app_name,
+            category,
+            duration,
+            cpu,
+            idle,
+            co2
+        ])
+
+
+def window_checked(name):
+    visible_processes = set()
+
+    def enum_window_callback(hwnd, _):
+        if not win32gui.IsWindowVisible(hwnd):
+            return
+        if not win32gui.GetWindowText(hwnd):
+            return
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+        try:
+            process = psutil.Process(pid)
+            proc_name = process.name().lower().replace('.exe', '')
+            visible_processes.add(proc_name)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+
+    win32gui.EnumWindows(enum_window_callback, None)
+    base_name = name.lower().replace('.exe', '')
+    return base_name in visible_processes
+
+
 def is_system_process(process_name):
-    """
-    Determine if a process is a system process (should be excluded)
-    Returns True if it's a system process, False if it's a user application
-    """
     if not process_name:
         return True
-    
     process_lower = process_name.lower()
-    
-    # Check exact match in blacklist
     if process_lower in SYSTEM_PROCESSES_BLACKLIST:
         return True
-    
-    # Remove common file extensions
     base_name = process_lower.replace('.exe', '').replace('.app', '').replace('.bin', '')
-    
-    # Check if base name is in blacklist
     if base_name in SYSTEM_PROCESSES_BLACKLIST:
         return True
-    
-    # Check for system patterns (but be more selective)
-    pattern_matches = sum(1 for pattern in SYSTEM_PROCESS_PATTERNS if pattern in base_name)
+    pattern_matches = sum(1 for p in SYSTEM_PROCESS_PATTERNS if p in base_name)
     if pattern_matches >= 2:
         return True
-    
-    # Specifically exclude if it's clearly a Windows system component
     if base_name.startswith(('system', 'svc', 'windows', 'ms', 'dwm', 'csrss', 'lsass', 'smss')):
         return True
-    
     return False
 
+
 def categorize_application(app_name):
-    """Categorize application based on name"""
     categories = {
-        'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv'],
-        'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
-        'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark'],
-        'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm', 
-                'intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim',
-                'onenote', 'evernote', 'notion'],
-        'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger', 'teams'],
-        'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
-        'streaming': ['spotify', 'apple music', 'pandora', 'soundcloud', 'tidal', 'deezer']
+    'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv','hotstar', 'primevideo', 'sonyliv', 'zee5'],
+    'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
+    'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark', 'gmail'],
+    'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm','intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim','onenote', 'evernote', 'notion', 'powerpnt','antigravity'],
+    'productivity': ['notion', 'todoist', 'trello', 'asana', 'clickup','calendar', 'ticktick', 'obsidian'],
+    'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger','facebook', 'instagram', 'twitter', 'reddit', 'snapchat'],
+    'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
+    'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal','deezer', 'gaana', 'jiosaavn', 'wynk'],
+    'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch','canva', 'gimp', 'paintapp', 'pbrush', 'blender'],
+    'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity', 'grok'],
+    'shopping': ['amazon', 'flipkart', 'myntra', 'ajio', 'meesho','snapdeal', 'tatacliq', 'nykaa'],
+    'sports': ['espn', 'cricbuzz', 'icc', 'fifa', 'nba', 'sportstar','fotmob'],
+    'news': ['bbc', 'cnn', 'ndtv', 'timesofindia', 'indianexpress','thehindu', 'hindustantimes'],
+    'education': ['coursera', 'udemy', 'edx', 'khanacademy','byjus', 'unacademy', 'udacity']
     }
-    
     app_name_lower = app_name.lower()
     for category, keywords in categories.items():
-        if any(keyword in app_name_lower for keyword in keywords):
+        if any(kw in app_name_lower for kw in keywords):
             return category
-    
     return 'other'
 
+
 def calculate_energy(category, duration, cpu_usage=0):
-    """Calculate energy consumption in kWh"""
-    # Base energy rates per hour (kWh)
     energy_rates = {
-        'video': 0.15,
-        'meeting': 0.12,
-        'browsing': 0.03,
-        'social': 0.05,
-        'email': 0.02,
-        'work': 0.06,
-        'streaming': 0.08,
-        'cloud': 0.08,
-        'other': 0.04
+        'video': 0.035,
+        'meeting': 0.045,
+        'browsing': 0.015,
+        'social': 0.020,
+        'email': 0.012,
+        'work': 0.025,
+        'streaming': 0.035,
+        'design': 0.030,
+        'ai': 0.06,
+        'other': 0.020,
+        'shopping': 0.020,
+        'sports': 0.020,
+        'news': 0.020,
+        'education': 0.020
     }
-    
     base_rate = energy_rates.get(category, energy_rates['other'])
     hours = duration / 3600
-    
-    # Scale by CPU usage (normalized)
-    cpu_multiplier = 1 + (cpu_usage / 100) * 0.5  # Up to 50% increase
-    
+    cpu_multiplier = 1 + (cpu_usage / 100) * 0.3
     return hours * base_rate * cpu_multiplier
 
+
+def _live_time(data):
+    now = time.time()
+    total = data.get('total_time', 0)
+
+    if data.get('start_time') is not None:
+        runtime = now - data['start_time']
+        runtime -= data.get('idle_total', 0)
+        if data.get('idle_start') is not None:
+            runtime -= now - data['idle_start']
+        total += max(runtime, 0)
+
+    return total
+
+
 def track_system_activity():
-    """Background thread to track system applications"""
-    global last_activity_time, is_idle
-    
-    process_start_times = {}
-    
-    print("🔍 Application tracking started (system processes excluded)")
-    
+    global last_activity_time, is_idle, tracked_processes
+
+    print("🔍 Application tracking started")
+    print("=" * 60)
+    print(f"⏱️  Polling interval: Every {config['realtime_update_interval']}s")
+    print(f"😴 Idle threshold: {config['idle_threshold']}s ({config['idle_threshold']/60:.0f} min)")
+    print("=" * 60 + "\n")
+
     while config['tracking_enabled']:
         try:
             current_time = time.time()
-            
-            # Check for idle state
-            idle_time = current_time - last_activity_time
-            is_idle = idle_time > config['idle_threshold']
-            
-            if is_idle:
-                time.sleep(5)
-                continue
-            
-            # Get all running processes
+
+
+            try:
+                hwnd = win32gui.GetForegroundWindow()
+                _, active_pid = win32process.GetWindowThreadProcessId(hwnd)
+                active_app = psutil.Process(active_pid).name()
+            except Exception:
+                active_app = None
+
+
             current_processes = {}
-            
             for proc in psutil.process_iter(['pid', 'name', 'cpu_percent']):
                 try:
                     proc_info = proc.info
                     proc_name = proc_info['name']
                     pid = proc_info['pid']
-                    
-                    # Skip if it's a system process
+                    cpu = proc_info['cpu_percent'] or 0
+
                     if is_system_process(proc_name):
                         continue
-                    
+                    if not window_checked(proc_name):
+                        continue
+
                     current_processes[pid] = {
                         'name': proc_name,
-                        'cpu': proc_info['cpu_percent']
+                        'cpu': cpu,
                     }
-                    
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    continue
-            
-            # Track new processes
-            for pid, info in current_processes.items():
-                if pid not in process_start_times:
-                    process_start_times[pid] = current_time
-                    print(f"✅ Tracking: {info['name']}")
-            
-            # Calculate duration for ended processes
-            ended_pids = set(process_start_times.keys()) - set(current_processes.keys())
-            for pid in ended_pids:
-                start_time = process_start_times[pid]
-                duration = current_time - start_time
-                
-                if pid in tracked_processes:
-                    proc_name = tracked_processes[pid]['name']
-                    cpu_usage = tracked_processes[pid].get('cpu', 0)
-                    
+
                     category = categorize_application(proc_name)
-                    
+
                     if proc_name not in activity_data:
                         activity_data[proc_name] = {
                             'total_time': 0,
-                            'cpu_usage': 0,
+                            'start_time': current_time,
+                            'cpu_usage': cpu,
                             'category': category,
-                            'last_update': None,
-                            'source': 'application'
+                            'source': 'application',
+                            'status': 'running',
+                            'last_active': current_time,
+                            'app_idle': False,
+                            'idle_start': None,
+                            'idle_total': 0,
                         }
-                    
-                    activity_data[proc_name]['total_time'] += duration
-                    activity_data[proc_name]['cpu_usage'] = cpu_usage
-                    activity_data[proc_name]['last_update'] = datetime.now().isoformat()
-                    
-                    print(f"📊 Tracked: {proc_name} for {duration:.0f}s")
-                
-                del process_start_times[pid]
-            
-            # Update tracked processes
+                    else:
+                        entry = activity_data[proc_name]
+                        if entry['status'] == 'completed':
+                            entry['start_time'] = current_time
+                            entry['status'] = 'running'
+                            entry['last_active'] = current_time
+                            entry['app_idle'] = False
+                            entry['idle_start'] = None
+                            entry['idle_total'] = 0
+                        entry['cpu_usage'] = (entry['cpu_usage'] + cpu) / 2
+
+                    entry = activity_data[proc_name]
+
+                    if active_app and proc_name == active_app:
+                        entry['last_active'] = current_time
+
+                    idle_time = current_time - entry.get('last_active', current_time)
+
+                    if entry.get('category') in ('streaming', 'video','meeting'):
+                        entry['app_idle'] = False
+                    else:
+                        entry['app_idle'] = idle_time > config['idle_threshold']
+
+                    if entry['app_idle']:
+                        entry['status'] = 'idle'
+                        if entry.get('idle_start') is None:
+                            entry['idle_start'] = current_time
+                    else:
+                        if entry.get('idle_start') is not None:
+                            entry['idle_total'] = entry.get('idle_total', 0) + (current_time - entry['idle_start'])
+                            entry['idle_start'] = None
+                        entry['status'] = 'running'
+
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+
+            ended_pids = set(tracked_processes.keys()) - set(current_processes.keys())
+            for pid in ended_pids:
+                proc_name = tracked_processes[pid]['name']
+                if proc_name in activity_data:
+                    entry = activity_data[proc_name]
+                    if entry.get('status') in ('running', 'idle') and entry.get('start_time') is not None:
+                        session_duration = current_time - entry['start_time']
+                        session_duration -= entry.get('idle_total', 0)
+                        if entry.get('idle_start') is not None:
+                            session_duration -= current_time - entry['idle_start']
+                        entry['total_time'] += max(session_duration, 0)
+                        entry['start_time'] = None
+                        entry['idle_start'] = None
+                        entry['idle_total'] = 0
+                        entry['app_idle'] = False
+                        entry['status'] = 'completed'
+                        print(f"✅ Completed: {proc_name}")
+                        print(f"   Total time: {entry['total_time']/60:.1f} min")
+
             tracked_processes.clear()
-            tracked_processes.update({pid: info for pid, info in current_processes.items()})
-            
-            time.sleep(5)  # Check every 5 seconds
-            
+            tracked_processes.update(current_processes)
+
+            time.sleep(config['realtime_update_interval'])
+
         except Exception as e:
             print(f"⚠️ Error in tracking: {e}")
+            import traceback
+            traceback.print_exc()
             time.sleep(5)
+
+
+
+
+@app.route("/api/predict-next-hour")
+def predict_next_hour():
+    next_hour = (datetime.now().hour + 1) % 24
+
+    total_duration = 0
+    total_cpu = 0
+    total_idle = 0
+    count = 0
+
+    for identifier, data in activity_data.items():
+        live = _live_time(data)
+
+        if live <= 0:
+            continue
+
+        total_duration += live
+        total_cpu += data.get("cpu_usage", 0)
+        total_idle += data.get("idle_total", 0)
+        count += 1
+
+    if count == 0:
+        return jsonify({"predicted_next_hour_co2": 0})
+
+    avg_cpu = total_cpu / count
+
+    prediction = predict_co2(
+        3600,
+        avg_cpu,
+        total_idle,
+        next_hour
+    )
+
+    return jsonify({
+        "predicted_next_hour_co2": prediction
+    })
+@app.route("/api/predict-today")
+def predict_today():
+    current_co2 = 0
+
+    total_duration = 0
+    total_cpu = 0
+    total_idle = 0
+    count = 0
+
+    for identifier, data in activity_data.items():
+        live = _live_time(data)
+
+        energy = calculate_energy(
+            data["category"],
+            live,
+            data.get("cpu_usage", 0)
+        )
+
+        co2 = energy * config["emission_factor"]
+        current_co2 += co2
+
+        if live > 0:
+            total_duration += live
+            total_cpu += data.get("cpu_usage", 0)
+            total_idle += data.get("idle_total", 0)
+            count += 1
+
+    if count == 0:
+        return jsonify({
+            "current_co2": 0,
+            "predicted_today_total_co2": 0
+        })
+
+    avg_cpu = total_cpu / count
+
+    current_hour = datetime.now().hour
+    predicted_remaining = 0
+
+    for h in range(current_hour + 1, 24):
+        pred = predict_co2(
+            3600,
+            avg_cpu,
+            total_idle,
+            h
+        )
+        predicted_remaining += pred
+
+    return jsonify({
+        "current_co2": float(current_co2),
+        "predicted_today_total_co2": float(current_co2 + predicted_remaining)
+    })
+@app.route("/api/ai-suggestions")
+def ai_suggestions():
+
+    total_energy = 0
+    total_co2 = 0
+    breakdown = []
+
+    for identifier, data in activity_data.items():
+
+        live_time = _live_time(data)
+
+        energy = calculate_energy(
+            data["category"],
+            live_time,
+            data.get("cpu_usage",0)
+        )
+
+        co2 = energy * config["emission_factor"]
+
+        total_energy += energy
+        total_co2 += co2
+
+        breakdown.append({
+            "app": identifier,
+            "category": data["category"],
+            "time": live_time,
+            "co2": co2,
+            "idle": data.get("app_idle", False)
+        })
+
+    suggestions = generate_ai_suggestions(
+        total_co2,
+        total_energy,
+        breakdown
+    )
+
+    return jsonify({
+        "suggestions": suggestions
+    })
 
 @app.route('/api/activity', methods=['POST'])
 def add_activity():
-    """Receive activity data from browser extension"""
     data = request.json
-    
+
     source = data.get('source', 'browser')
     identifier = data.get('domain') or data.get('application')
     duration = data.get('duration', 0)
     category = data.get('category', 'unknown')
-    
+    status = data.get('status', 'completed')
+
     if identifier not in activity_data:
         activity_data[identifier] = {
             'total_time': 0,
+            'start_time': None,
             'cpu_usage': 0,
             'category': category,
-            'last_update': None,
-            'source': source
+            'source': source,
+            'status': status,
         }
-    
+
     activity_data[identifier]['total_time'] += duration
-    activity_data[identifier]['last_update'] = datetime.now().isoformat()
-    
-    # Update last activity time
+    activity_data[identifier]['status'] = status
+    activity_data[identifier]['category'] = category
+
     global last_activity_time
     last_activity_time = time.time()
-    
+
     return jsonify({'status': 'success'}), 200
+
+
 
 @app.route('/api/manual-activity', methods=['POST'])
 def add_manual_activity():
-    """Receive manual activity data from dashboard"""
     data = request.json
-    
-    # Store manual activities with their calculated CO2
+
     for activity_type, activity_data_item in data.items():
         if activity_type in ['email', 'video', 'streaming', 'cloud']:
-            identifier = f'manual_{activity_type}_input'
-            
+            global manual_input_counter
+            manual_input_counter[activity_type] = manual_input_counter.get(activity_type, 0) + 1
+            identifier = f'MANUAL {activity_type.upper()} INPUT {manual_input_counter[activity_type]}'
+
             activity_data[identifier] = {
                 'total_time': 0,
+                'start_time': None,
                 'cpu_usage': 0,
                 'category': activity_type,
-                'last_update': datetime.now().isoformat(),
                 'source': 'manual_input',
                 'co2': activity_data_item.get('co2', 0),
-                'details': activity_data_item
+                'details': activity_data_item,
+                'status': 'completed',
             }
-    
+
     return jsonify({'status': 'success'}), 200
+
 
 @app.route('/api/calculate', methods=['GET'])
 def calculate_footprint():
-    """Calculate total carbon footprint including manual inputs"""
     total_energy = 0
     total_co2 = 0
     breakdown = []
-    
+
     for identifier, data in activity_data.items():
-        # Check if this is manual input
-        if data['source'] == 'manual_input':
+        live_time = _live_time(data)
+
+        if data.get('source') == 'manual_input':
             co2 = data.get('co2', 0)
-            energy = 0  # Manual inputs already have CO2 calculated
+            energy = co2 / config['emission_factor']
         else:
-            # Normal automatic tracking
             energy = calculate_energy(
                 data['category'],
-                data['total_time'],
+                live_time,
                 data.get('cpu_usage', 0)
             )
             co2 = energy * config['emission_factor']
+
+        log_usage_data(
+            identifier,
+            data['category'],
+            live_time,
+            data.get('cpu_usage',0),
+            data.get('idle_total',0),
+            co2
+        )
         
         total_energy += energy
         total_co2 += co2
-        
+
         breakdown.append({
             'name': identifier,
             'category': data['category'],
-            'time': data['total_time'],
+            'time': live_time,
             'energy': energy,
             'co2': co2,
-            'source': data['source'],
-            'details': data.get('details', {})
+            'source': data.get('source', 'application'),
+            'status': data.get('status', 'completed'),
+            'app_idle': data.get('app_idle', False),
+            'details': data.get('details', {}),
         })
-    
+
     breakdown.sort(key=lambda x: x['co2'], reverse=True)
-    
-    if total_co2 < 1:
+
+    if total_co2 < 0.1:
         status = 'Low'
-    elif total_co2 < 5:
+    elif total_co2 < 0.5:
         status = 'Moderate'
-    elif total_co2 < 10:
+    elif total_co2 < 1:
         status = 'High'
     else:
         status = 'Very High'
-    
+
     return jsonify({
         'total_energy': total_energy,
         'total_co2': total_co2,
         'status': status,
-        'breakdown': breakdown
+        'breakdown': breakdown,
     })
+
 
 @app.route('/api/config', methods=['GET', 'POST'])
 def manage_config():
-    """Get or update configuration"""
     if request.method == 'POST':
         data = request.json
         config.update(data)
         return jsonify({'status': 'success', 'config': config})
-    
     return jsonify(config)
+
 
 @app.route('/api/reset', methods=['POST'])
 def reset_data():
-    """Reset all tracking data"""
     activity_data.clear()
+    tracked_processes.clear()
     return jsonify({'status': 'success'})
+
 
 @app.route('/api/reset-manual', methods=['POST'])
 def reset_manual_data():
-    """Reset only manual input data"""
-    keys_to_remove = [k for k in activity_data.keys() if 'manual_' in k and '_input' in k]
+    keys_to_remove = [k for k in activity_data if 'manual_' in k and '_input' in k]
     for key in keys_to_remove:
         del activity_data[key]
-    
     return jsonify({'status': 'success'})
+
 
 @app.route('/dashboard')
 def dashboard():
-    """Serve dashboard HTML"""
     return render_template('dashboard.html')
+
 
 @app.route('/api/heartbeat', methods=['POST'])
 def heartbeat():
-    """Receive heartbeat to track activity"""
     global last_activity_time
     last_activity_time = time.time()
     return jsonify({'status': 'success'})
 
+
+
 if __name__ == '__main__':
-    # Start background tracking thread
     tracking_thread = threading.Thread(target=track_system_activity, daemon=True)
     tracking_thread.start()
-    
-    print("\n" + "="*50)
-    print("🌍 Carbon Footprint Tracker Started")
-    print("="*50)
+
+    print("\n" + "=" * 60)
+    print("🌍 Carbon Footprint Tracker")
+    print("=" * 60)
     print("📊 Dashboard: http://localhost:5000/dashboard")
-    print("🔍 Tracking: User applications only")
-    print("="*50 + "\n")
-    
-    # Run Flask app
+    print("")
+    print(f"⏱️  Polling every {config['realtime_update_interval']} seconds")
+    print("=" * 60 + "\n")
+
     app.run(debug=True, port=5000)
