@@ -19,22 +19,12 @@ CORS(app)
 
 
 
-# ---------------------------------------------------------------------------
-# Data store
-# ---------------------------------------------------------------------------
-# Schema per process entry:
-#   total_time  – accumulated seconds from COMPLETED sessions only
-#   start_time  – time.time() when the current running session began; None when stopped
-#   status      – "running" | "completed"
-#   cpu_usage   – rolling average CPU %
-#   category    – app category string
-#   source      – "application" | "browser" | "manual_input"
-# ---------------------------------------------------------------------------
+
 activity_data = {}
 
 
-IDLE_THRESHOLD = 600 #seconds
-REFRESH = 5 #seconds
+IDLE_THRESHOLD = 600
+REFRESH = 5
 
 
 
@@ -53,9 +43,7 @@ last_activity_time = time.time()
 is_idle = False
 
 
-# ---------------------------------------------------------------------------
-# System process filtering
-# ---------------------------------------------------------------------------
+
 SYSTEM_PROCESSES_BLACKLIST = {
     'system', 'system idle process', 'smss.exe', 'csrss.exe', 'wininit.exe',
     'winlogon.exe', 'services.exe', 'lsass.exe', 'lsaiso.exe', 'svchost.exe',
@@ -139,7 +127,6 @@ def log_usage_data(app_name, category, duration, cpu, idle, co2):
 
 
 def window_checked(name):
-    """Return True if the process has a visible window (user-facing app)."""
     visible_processes = set()
 
     def enum_window_callback(hwnd, _):
@@ -178,20 +165,6 @@ def is_system_process(process_name):
 
 
 def categorize_application(app_name):
-    # categories = {
-    #     'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv'],
-    #     'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
-    #     'email': ['thunderbird', 'outlook', 'mail', 'mailspring', 'spark'],
-    #     'work': ['word', 'excel', 'powerpoint', 'libreoffice', 'code', 'vscode', 'pycharm',
-    #              'intellij', 'eclipse', 'netbeans', 'atom', 'sublime', 'notepad++', 'vim',
-    #              'onenote', 'evernote', 'notion','powerpnt'],
-    #     'social': ['discord', 'slack', 'telegram', 'whatsapp', 'signal', 'messenger'],
-    #     'browsing': ['chrome', 'firefox', 'edge', 'safari', 'brave', 'opera', 'vivaldi', 'browser'],
-    #     'streaming': ['spotify', 'music', 'itunes', 'pandora', 'soundcloud', 'tidal', 'deezer'],
-    #     'design': ['paint', 'mspaint', 'photoshop', 'illustrator', 'figma', 'sketch',
-    #                 'canva', 'gimp', 'paintapp', 'pbrush'],
-    #     'ai': ['chatgpt', 'openai', 'gemini', 'bard', 'claude', 'copilot', 'perplexity','grok'],
-    # }
     categories = {
     'video': ['vlc', 'netflix', 'youtube', 'mpv', 'kodi', 'mediaplayer', 'movies', 'tv','hotstar', 'primevideo', 'sonyliv', 'zee5'],
     'meeting': ['zoom', 'teams', 'skype', 'meet', 'webex', 'goto', 'bluejeans'],
@@ -216,12 +189,6 @@ def categorize_application(app_name):
 
 
 def calculate_energy(category, duration, cpu_usage=0):
-    # energy_rates = {
-    #     'video': 0.15, 'meeting': 0.12, 'browsing': 0.03,
-    #     'social': 0.05, 'email': 0.02, 'work': 0.06,
-    #     'streaming': 0.08, 'cloud': 0.08, 'design': 0.05,
-    #     'other': 0.04
-    # }
     energy_rates = {
         'video': 0.035,
         'meeting': 0.045,
@@ -240,22 +207,11 @@ def calculate_energy(category, duration, cpu_usage=0):
     }
     base_rate = energy_rates.get(category, energy_rates['other'])
     hours = duration / 3600
-    # cpu_multiplier = 1 + (cpu_usage / 100) * 0.5
     cpu_multiplier = 1 + (cpu_usage / 100) * 0.3
     return hours * base_rate * cpu_multiplier
 
 
-# ---------------------------------------------------------------------------
-# Helper: compute live runtime for a single activity_data entry
-# ---------------------------------------------------------------------------
 def _live_time(data):
-    """Return the real-time runtime in seconds for a tracked application.
-
-    Computes: total_time + (now - start_time) - idle_total - current_idle.
-    Idle periods are subtracted so the session is never broken; the
-    dashboard always gets a valid, continuously-increasing number for
-    active apps and a frozen-but-valid number for idle apps.
-    """
     now = time.time()
     total = data.get('total_time', 0)
 
@@ -269,17 +225,7 @@ def _live_time(data):
     return total
 
 
-# ---------------------------------------------------------------------------
-# Background tracking loop
-# ---------------------------------------------------------------------------
 def track_system_activity():
-    """Track running desktop applications every 5 seconds.
-
-    Uses a start_time-based model:
-      • When a process is first seen  → record start_time, status = "running"
-      • While it keeps running        → only update cpu_usage (time is computed on-the-fly)
-      • When it disappears            → total_time += (now - start_time), clear start_time
-    """
     global last_activity_time, is_idle, tracked_processes
 
     print("🔍 Application tracking started")
@@ -292,7 +238,7 @@ def track_system_activity():
         try:
             current_time = time.time()
 
-            # ------ Detect foreground (active) application ------
+
             try:
                 hwnd = win32gui.GetForegroundWindow()
                 _, active_pid = win32process.GetWindowThreadProcessId(hwnd)
@@ -300,7 +246,7 @@ def track_system_activity():
             except Exception:
                 active_app = None
 
-            # ------ Snapshot currently visible processes ------
+
             current_processes = {}
             for proc in psutil.process_iter(['pid', 'name', 'cpu_percent']):
                 try:
@@ -322,7 +268,6 @@ def track_system_activity():
                     category = categorize_application(proc_name)
 
                     if proc_name not in activity_data:
-                        # ---- First time seeing this process ----
                         activity_data[proc_name] = {
                             'total_time': 0,
                             'start_time': current_time,
@@ -338,39 +283,31 @@ def track_system_activity():
                     else:
                         entry = activity_data[proc_name]
                         if entry['status'] == 'completed':
-                            # ---- Process restarted: begin a new session ----
                             entry['start_time'] = current_time
                             entry['status'] = 'running'
                             entry['last_active'] = current_time
                             entry['app_idle'] = False
                             entry['idle_start'] = None
                             entry['idle_total'] = 0
-                        # Update rolling average CPU (keep it cheap)
                         entry['cpu_usage'] = (entry['cpu_usage'] + cpu) / 2
 
-                    # ---- Update idle state for this process ----
                     entry = activity_data[proc_name]
 
-                    # Foreground app is always active
                     if active_app and proc_name == active_app:
                         entry['last_active'] = current_time
 
                     idle_time = current_time - entry.get('last_active', current_time)
 
-                    # Streaming/video apps should never become idle
                     if entry.get('category') in ('streaming', 'video','meeting'):
                         entry['app_idle'] = False
                     else:
                         entry['app_idle'] = idle_time > config['idle_threshold']
 
-                    # Set status indicator (does NOT affect session tracking)
                     if entry['app_idle']:
                         entry['status'] = 'idle'
-                        # Record when idle period started (once)
                         if entry.get('idle_start') is None:
                             entry['idle_start'] = current_time
                     else:
-                        # Resume from idle: accumulate idle duration, clear marker
                         if entry.get('idle_start') is not None:
                             entry['idle_total'] = entry.get('idle_total', 0) + (current_time - entry['idle_start'])
                             entry['idle_start'] = None
@@ -379,14 +316,12 @@ def track_system_activity():
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
 
-            # ------ Detect processes that stopped ------
             ended_pids = set(tracked_processes.keys()) - set(current_processes.keys())
             for pid in ended_pids:
                 proc_name = tracked_processes[pid]['name']
                 if proc_name in activity_data:
                     entry = activity_data[proc_name]
                     if entry.get('status') in ('running', 'idle') and entry.get('start_time') is not None:
-                        # Finalize the session: subtract idle time from duration
                         session_duration = current_time - entry['start_time']
                         session_duration -= entry.get('idle_total', 0)
                         if entry.get('idle_start') is not None:
@@ -400,7 +335,6 @@ def track_system_activity():
                         print(f"✅ Completed: {proc_name}")
                         print(f"   Total time: {entry['total_time']/60:.1f} min")
 
-            # ------ Refresh tracked_processes for next iteration ------
             tracked_processes.clear()
             tracked_processes.update(current_processes)
 
@@ -413,9 +347,7 @@ def track_system_activity():
             time.sleep(5)
 
 
-# ---------------------------------------------------------------------------
-# Flask routes
-# ---------------------------------------------------------------------------
+
 
 @app.route("/api/predict-next-hour")
 def predict_next_hour():
@@ -442,9 +374,8 @@ def predict_next_hour():
 
     avg_cpu = total_cpu / count
 
-    # 🔥 ONE prediction for whole system
     prediction = predict_co2(
-        3600,          # full hour
+        3600,
         avg_cpu,
         total_idle,
         next_hour
@@ -462,7 +393,6 @@ def predict_today():
     total_idle = 0
     count = 0
 
-    # 🔹 Calculate current CO2 (real)
     for identifier, data in activity_data.items():
         live = _live_time(data)
 
@@ -489,7 +419,6 @@ def predict_today():
 
     avg_cpu = total_cpu / count
 
-    # 🔥 Predict remaining hours
     current_hour = datetime.now().hour
     predicted_remaining = 0
 
@@ -603,23 +532,15 @@ def add_manual_activity():
 
 @app.route('/api/calculate', methods=['GET'])
 def calculate_footprint():
-    """Return the carbon footprint breakdown with LIVE runtime values.
-
-    For running processes the time includes the current (still-ongoing)
-    session, so the dashboard sees a continuously increasing number without
-    waiting for the next tracking-loop tick.
-    """
     total_energy = 0
     total_co2 = 0
     breakdown = []
 
     for identifier, data in activity_data.items():
-        # --- Compute live time ---
         live_time = _live_time(data)
 
         if data.get('source') == 'manual_input':
             co2 = data.get('co2', 0)
-            # energy = 0
             energy = co2 / config['emission_factor']
         else:
             energy = calculate_energy(
@@ -708,9 +629,7 @@ def heartbeat():
     return jsonify({'status': 'success'})
 
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
+
 if __name__ == '__main__':
     tracking_thread = threading.Thread(target=track_system_activity, daemon=True)
     tracking_thread.start()

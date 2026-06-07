@@ -1,15 +1,16 @@
 from google import genai
 import time
-
-API_KEY = "AIzaSyALfhS6meAaXjRX2KR41o784HwpmJevEos"
+from dotenv import load_dotenv
+import os
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
 
 client = genai.Client(api_key=API_KEY)
 
-# Cache variables
 cached_suggestions = "Analyzing usage..."
 last_update = 0
 
-CACHE_DURATION = 300  # seconds (5 minutes)
+CACHE_DURATION = 300 
 
 
 def generate_ai_suggestions(total_co2, total_energy, breakdown):
@@ -19,7 +20,6 @@ def generate_ai_suggestions(total_co2, total_energy, breakdown):
 
     current_time = time.time()
 
-    # Return cached result if still valid
     if current_time - last_update < CACHE_DURATION:
         return cached_suggestions
 
@@ -60,7 +60,6 @@ Do not include explanations or extra text.
 
 
 """
-#Focus on reducing streaming energy, closing unused apps, and avoiding idle usage.
     try:
 
         response = client.models.generate_content(
@@ -75,7 +74,6 @@ Do not include explanations or extra text.
 
     except Exception as e:
         print(f" AI suggestion error: {e}")
-        # Return last cached response instead of showing error to user
         if cached_suggestions and cached_suggestions != "Analyzing usage...":
             return cached_suggestions
         return "AI suggestions temporarily unavailable. Please try again later."

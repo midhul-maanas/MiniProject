@@ -3,9 +3,7 @@ let tabStates = {};
 let currentTabId = null;
 let currentUrl = null;
 
-const IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes, matches config default
-
-// --- Initialization ---
+const IDLE_THRESHOLD_MS = 5 * 60 * 1000;
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log('Digital Carbon Footprint Tracker installed');
@@ -33,8 +31,6 @@ async function syncIdleDetectionInterval() {
   const threshold = config?.idleThresholdSeconds ?? 300;
   chrome.idle.setDetectionInterval(Math.max(15, threshold));
 }
-
-// --- Helpers ---
 
 function extractDomain(url) {
   try {
@@ -92,8 +88,6 @@ async function sendToBackend(domain, duration, status, totalTime = 0) {
 }
 
 
-// --- Core Logic Functions ---
-
 function initTabState(tabId, url, status = 'running') {
   tabStates[tabId] = {
     url,
@@ -107,10 +101,6 @@ function initTabState(tabId, url, status = 'running') {
   };
 }
 
-/**
- * Flush the current active segment's time into totalTime.
- * Does NOT reset totalTime — only closes the open segment.
- */
 async function flushTabTime(tabId) {
   const state = tabStates[tabId];
   if (!state || !state.segmentStart || state.status !== 'running') return;
@@ -125,24 +115,21 @@ async function flushTabTime(tabId) {
   sendToBackend(extractDomain(state.url), segmentDuration, state.status, state.totalTime);
 }
 
-/**
- * Resume an existing tab (switching back to it) or start fresh if unknown.
- * totalTime is preserved — only segmentStart resets.
- */
+
 async function resumeOrStartTab(tabId, url) {
   if (!url || url.startsWith('chrome://') || url.startsWith('chrome-extension://')) return;
 
   if (tabStates[tabId] && tabStates[tabId].url === url) {
-    // Known tab — resume without resetting totalTime
+
     const state = tabStates[tabId];
     state.status = 'running';
     state.segmentStart = Date.now();
-    state.backgroundSince = null; // no longer in background
+    state.backgroundSince = null;
     state.visits += 1;
     state.lastVisit = Date.now();
     console.log(`Tab ${tabId} resumed: ${extractDomain(url)} (totalTime: ${state.totalTime.toFixed(1)}s)`);
   } else {
-    // New or navigated tab — carry forward previous totalTime for this domain
+
     initTabState(tabId, url, 'running');
     const domain = extractDomain(url);
     const { activityData = {} } = await chrome.storage.local.get('activityData');
@@ -159,17 +146,12 @@ async function resumeOrStartTab(tabId, url) {
   await persistTabToStorage(tabId);
 }
 
-/**
- * Send a tab to background — flush its time, set backgroundSince,
- * but keep status as 'running' until the threshold elapses.
- */
 async function sendTabToBackground(tabId) {
   const state = tabStates[tabId];
   if (!state) return;
 
-  await flushTabTime(tabId);         // save the segment time accumulated so far
-  state.backgroundSince = Date.now(); // start the background idle clock
-  // status stays 'running' — heartbeat will flip to 'idle' after threshold
+  await flushTabTime(tabId);
+  state.backgroundSince = Date.now();
   console.log(`Tab ${tabId} sent to background: ${extractDomain(state.url)} (status stays running for now)`);
 }
 
@@ -192,12 +174,12 @@ async function persistTabToStorage(tabId) {
   await chrome.storage.local.set({ activityData });
 }
 
-// --- Event Listeners ---
+
 
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   const previousTabId = currentTabId;
 
-  // Send previous tab to background (status stays 'running' until threshold)
+
   if (previousTabId && tabStates[previousTabId]) {
     await sendTabToBackground(previousTabId);
   }
@@ -224,7 +206,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     initTabState(tabId, changeInfo.url, 'running');
     sendToBackend(extractDomain(changeInfo.url), 0, 'running', 0);
   } else {
-    // Background tab navigated — reset state, preserve background clock
+
     initTabState(tabId, changeInfo.url, 'running');
     tabStates[tabId].segmentStart = null;
     tabStates[tabId].backgroundSince = Date.now();
@@ -233,7 +215,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
-    // Window lost focus — send current tab to background
     if (currentTabId && tabStates[currentTabId]) {
       await sendTabToBackground(currentTabId);
     }
@@ -248,10 +229,7 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
 });
 
 chrome.tabs.onRemoved.addListener(async (tabId) => {
-  // Clear active-tab pointer FIRST to prevent onActivated race condition.
-  // If onActivated fires for the next tab before onRemoved finishes,
-  // it would try to sendTabToBackground(currentTabId) — which is the
-  // now-dead tab — corrupting its segment.
+
   const wasActiveTab = (tabId === currentTabId);
   if (wasActiveTab) {
     currentTabId = null;
@@ -260,10 +238,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
   const state = tabStates[tabId];
   if (state) {
-    // Force-flush any open segment regardless of status.
-    // flushTabTime() guards on status === 'running', but the active tab
-    // might have been marked 'idle' by chrome.idle while still having an
-    // open segmentStart (edge case). We handle it directly here.
+
     if (state.segmentStart) {
       const now = Date.now();
       const segmentDuration = (now - state.segmentStart) / 1000;
@@ -273,14 +248,12 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
       state.segmentStart = null;
     }
 
-    // Mark completed and persist
     state.status = 'completed';
     const domain = extractDomain(state.url);
 
     await persistTabToStorage(tabId);
     await sendToBackend(domain, 0, 'completed', state.totalTime);
 
-    // --- Manual input prompt for email / cloud categories ---
     const category = categorizeWebsite(domain);
     if (category === 'email' || category === 'cloud') {
       promptManualInput(category);
@@ -291,16 +264,10 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   }
 });
 
-/**
- * Open a styled popup window for manual activity input when
- * an email or cloud tab is closed.
- */
 async function promptManualInput(category) {
   try {
     const baseUrl = chrome.runtime.getURL('manual-input.html');
     const popupUrl = `${baseUrl}?category=${category}`;
-
-    // Size the popup to fit each form
     const width = 440;
     const height = category === 'cloud' ? 540 : 400;
 
@@ -349,8 +316,6 @@ chrome.idle.onStateChanged.addListener(async (state) => {
   }
 });
 
-// --- Heartbeat (every 15s) ---
-
 setInterval(async () => {
   const { config } = await chrome.storage.local.get('config');
   const idleThresholdMs = (config?.idleThresholdSeconds ?? 300) * 1000;
@@ -362,18 +327,18 @@ setInterval(async () => {
     const isMedia = ['video', 'meeting', 'streaming'].includes(state.category);
 
     if (tabId === currentTabId) {
-      // --- Active tab ---
+
       if (isMedia || state.status === 'running') {
-        // Flush and restart segment
+
         await flushTabTime(tabId);
         state.segmentStart = Date.now();
       }
     } else {
-      // --- Background tab ---
+
       const timeInBackground = state.backgroundSince ? now - state.backgroundSince : Infinity;
 
       if (isMedia) {
-        // Media tabs (video/streaming/meeting) NEVER go idle — always running
+
         if (state.status === 'idle') {
           state.status = 'running';
           state.segmentStart = null;
@@ -382,18 +347,16 @@ setInterval(async () => {
         sendToBackend(domain, 0, 'running', state.totalTime);
         console.log(`Background media tab ${tabId} always running: ${domain}`);
       } else if (state.status === 'running' && timeInBackground >= idleThresholdMs) {
-        // Threshold crossed — flip to idle
+
         state.status = 'idle';
         await persistTabToStorage(tabId);
         sendToBackend(domain, 0, 'idle', state.totalTime);
         console.log(`Background tab ${tabId} idle after ${Math.round(timeInBackground / 1000)}s: ${domain}`);
       } else if (state.status === 'running') {
-        // Still within threshold — send running pulse with time remaining
         const remaining = Math.round((idleThresholdMs - timeInBackground) / 1000);
         sendToBackend(domain, 0, 'running', state.totalTime);
         console.log(`Background tab ${tabId} still running, ${remaining}s until idle: ${domain}`);
       } else if (state.status === 'idle') {
-        // Already idle — periodic idle pulse
         sendToBackend(domain, 0, 'idle', state.totalTime);
       }
     }

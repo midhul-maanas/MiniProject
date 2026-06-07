@@ -14,11 +14,11 @@ X = df[[
 y = df["co2"]
 
 model = RandomForestRegressor(
-    n_estimators=100,
-    random_state=42
+    n_estimators=100, 
+    random_state=42 
 )
 
-model.fit(X, y)
+model.fit(X, y) 
 
 joblib.dump(model, "co2_model.pkl")
 
