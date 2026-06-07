@@ -706,323 +706,10 @@
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-
-        body {
-            font-family: 'Outfit', sans-serif !important;
-            background: #f0fdf4 !important;
-            color: #1c5314 !important;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            background: rgba(15, 42, 15, 0.75) !important;
-            backdrop-filter: blur(18px);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, .8);
-        }
-
-        header {
-            background: transparent !important;
-            border-bottom: 1px solid rgba(255, 255, 255, .08);
-        }
-
-        header p {
-            display: none;
-        }
-
-        .summary-card {
-            background: linear-gradient(145deg, #020617, #0f172a) !important;
-            color: #e5e7eb;
-        }
-
-        .summary-card .value {
-            background: linear-gradient(90deg, #74d496, #b1e7be);
-            -webkit-background-clip: text;
-            color: transparent !important;
-        }
-
-        .summary {
-            background: transparent !important;
-        }
-
-        .manual-input-section {
-            background: transparent !important;
-            border-top: none !important;
-        }
-
-        .tab-btn {
-            background: #020617 !important;
-            color: #94a3b8 !important;
-            border: 1px solid rgba(255, 255, 255, .08);
-        }
-
-        .tab-btn.active {
-            background: linear-gradient(90deg, #1a6b4a, #84cc16) !important;
-            color: white !important;
-        }
-
-        .tab-content {
-            background: #020617 !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .7);
-        }
-
-        .input-group input,
-        .input-group select {
-            background: #0f172a !important;
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, .1) !important;
-        }
-
-        .checkbox-group {
-            background: #020617 !important;
-        }
-
-        .chart-container {
-            background: #020617 !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .7);
-        }
-
-        .chart-container h2 {
-            color: white;
-        }
-
-        .data-table th {
-            background: #020617 !important;
-            color: #94a3b8 !important;
-        }
-
-        .data-table td {
-            color: #e5e7eb !important;
-            border-bottom: 1px solid rgba(255, 255, 255, .05);
-        }
-
-        .data-table tr:hover {
-            background: #020617 !important;
-        }
-
-        .data-table tr.row-running {
-            background: rgba(253, 253, 85, 0.711) !important;
-        }
-
-        .data-table tr.row-running td {
-            color: #000000 !important;
-            font-weight: 600;
-        }
-
-        .data-table tr.row-running:hover {
-            background: rgba(250, 204, 21, 0.45) !important;
-        }
-
-        .chart-box {
-            width: 700px;
-            height: 400px;
-            margin: 0 auto;
-        }
-
-        .category-ai {
-            background: #312e81 !important;
-            color: #c7d2fe !important;
-        }
-
-        .source-idle {
-            background: #1e293b !important;
-            color: #93c5fd !important;
-        }
-
-        .source-completed {
-            background: #022c22 !important;
-            color: #ea5d06 !important;
-        }
-
-        .source-manual {
-            background: #022c22 !important;
-            color: #34d399 !important;
-        }
-
-        .actions {
-            background: transparent !important;
-        }
-
-        button {
-            background: linear-gradient(90deg, #1a6b4a, #84cc16) !important;
-        }
-
-
-        .ai-insights-section {
-            padding: 20px 40px 0;
-        }
-
-        .ai-insights-container {
-            background: #020617;
-            backdrop-filter: blur(18px);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
-        }
-
-        .ai-insights-header {
-            padding: 30px 40px 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .ai-insights-header h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 26px;
-            font-weight: 700;
-            background: linear-gradient(90deg, #74d496, #b1e7be);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
-
-        .ai-insights-body {
-            padding: 20px 40px 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .ai-insights-predictions {
-            flex: 1;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .ai-insights-predictions h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
-            color: white;
-            margin: 0 0 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .ai-insights-pred-cards-row {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .ai-insights-pred-card {
-            flex: 1;
-            min-width: 220px;
-            background: linear-gradient(145deg, #020617, #0f172a);
-            border-radius: 14px;
-            padding: 24px 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .ai-insights-pred-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(26, 107, 74, 0.25);
-        }
-
-        .ai-insights-pred-label {
-            font-size: 13px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            font-weight: 600;
-        }
-
-        .ai-insights-pred-value {
-            font-size: 36px;
-            font-weight: 700;
-            background: linear-gradient(90deg, #74d496, #b1e7be);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.1;
-        }
-
-        .ai-insights-pred-unit {
-            font-size: 14px;
-            color: #94a3b8;
-        }
-
-        .ai-insights-suggestions {
-            flex: 1.4;
-            min-width: 300px;
-        }
-
-        .ai-insights-suggestions h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
-            color: white;
-            margin: 0 0 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .ai-insights-sug-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .ai-insights-sug-item {
-            background: linear-gradient(145deg, #020617, #0f172a);
-            border-radius: 10px;
-            padding: 16px 20px;
-            font-size: 15px;
-            color: #e5e7eb;
-            line-height: 1.5;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-            transition: background 0.2s ease;
-        }
-
-        .ai-insights-sug-item:hover {
-            background: linear-gradient(145deg, #0f172a, #1e293b);
-        }
-
-        .ai-insights-loading {
-            color: #64748b;
-            font-size: 14px;
-            padding: 12px 0;
-        }
-
-        .ai-insights-loading .ai-dot-pulse {
-            display: inline-block;
-            animation: aiDotPulse 1.2s infinite;
-        }
-
-        @keyframes aiDotPulse {
-
-            0%,
-            100% {
-                opacity: 0.3;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
     </style>
 </head>
 
@@ -1392,18 +1079,18 @@
                 const isRunning = item.status === 'running';
                 const isIdle = item.status === 'idle';
                 const isManual = item.source === 'manual_input';
-
+                const isRunning = item.status === 'running';
+                
+                // Source badge
                 let sourceBadge;
-                if (isRunning) {
-                    sourceBadge = '<span class="source-badge source-running">Running</span>';
-                } else if (isIdle) {
-                    sourceBadge = '<span class="source-badge source-idle">Idle</span>';
-                } else if (isManual) {
-                    sourceBadge = '<span class="source-badge source-manual">Manual</span>';
+                if (isManual) {
+                    sourceBadge = '<span class="source-badge source-manual">MANUAL</span>';
+                } else if (isRunning) {
+                    sourceBadge = '<span class="source-badge source-running">RUNNING ⏱️</span>';
                 } else {
-                    sourceBadge = '<span class="source-badge source-completed">Completed</span>';
+                    sourceBadge = '<span class="source-badge source-auto">AUTO</span>';
                 }
-
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.name}</td>
@@ -1411,9 +1098,14 @@
                     <td>${item.time > 0 ? formatTime(item.time) : 'N/A'}</td>
                     <td>${item.energy.toFixed(4)}</td>
                     <td>${item.co2.toFixed(4)}</td>
-                    <td>${sourceBadge}</td>`;
-
-                if (isRunning) row.classList.add('row-running');
+                    <td>${sourceBadge}</td>
+                `;
+                
+                // Highlight running apps
+                if (isRunning) {
+                    row.style.backgroundColor = '#fffacd';
+                }
+                
                 tbody.appendChild(row);
             });
         }
